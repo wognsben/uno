@@ -181,7 +181,14 @@ const STYLE = `
   .pl-gallery-mid-info {
     display: flex;
     align-items: flex-start;
-    padding: 10px 80px;
+    /*
+      Gallery bottom alignment
+      ------------------------------------------
+      오른쪽 하단 가로 이미지가 왼쪽 세로 그리드보다
+      살짝 내려가는 문제를 맞추기 위해 중간 정보 영역의
+      상하 padding만 10px → 5px로 조정한다.
+    */
+    padding: 5px 80px;
     gap: 80px;
     width: 1220px;
     box-sizing: border-box;
@@ -356,10 +363,17 @@ function ListView({ items, categories }: { items: ProductItem[]; categories: Pro
           </div>
 
           {/* Product names */}
+          {/*
+            List View Product Spacing
+            ------------------------------------------
+            기존 height: 20 / line-height: 40px 조합 때문에
+            상품명이 한 덩어리처럼 붙어 보였음.
+            리스트뷰 상품명 간격만 조정한다.
+          */}
           <div style={{
             width: 650, display: "flex", flexDirection: "column",
-            justifyContent: "space-between", alignItems: "flex-start",
-            gap: 10, paddingTop: 10, paddingBottom: 10,
+            justifyContent: "flex-start", alignItems: "flex-start",
+            gap: 24, paddingTop: 10, paddingBottom: 10,
           }}>
             {items.map((item) => (
               <a
@@ -367,9 +381,9 @@ function ListView({ items, categories }: { items: ProductItem[]; categories: Pro
                 href={item.href ?? "#"}
                 style={{
                   display: "flex", alignItems: "center",
-                  padding: "0 10px", height: 20, width: 630,
+                  padding: "0 10px", height: 32, width: 630,
                   fontFamily: "var(--font-en)", fontWeight: 400,
-                  fontSize: 20, lineHeight: "40px", color: "#151515",
+                  fontSize: 20, lineHeight: "32px", color: "#151515",
                   textDecoration: "none",
                 }}
                 onMouseEnter={(e) => { (e.currentTarget as HTMLAnchorElement).style.textDecoration = "underline"; }}
