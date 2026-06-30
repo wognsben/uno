@@ -8,7 +8,7 @@
    List 뷰    : 기존 에디토리얼 리스트 디자인 유지
 ========================================================== */
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { ProductCategory, ProductItem } from "./ProductTemplate";
 
 import imgA from "../../imports/세미패키지메인히어로그리드/3f5da2e34aadc41b88babc2cb3cf79d54480fb17.png";
@@ -22,26 +22,97 @@ import imgF from "../../imports/세미패키지메인히어로그리드/176f62c6
 import imgUnion  from "../../imports/세미패키지메인히어로리스트/1b7d77e27b8ba6a7714d11f1d35222896c1a13a8.png";
 import imgStatue from "../../imports/세미패키지메인히어로리스트/53d12808d051374ee7f5af9cc9b1904682827469.png";
 
+/* Desktop Responsive Base
+   - 실제 ProductList canvas는 Figma 기준 1700px
+   - 화면에서 보이는 desktop 원본 기준은 1600px로 제한
+   - 1600px 이하에서는 canvas 전체를 부모 폭에 맞춰 scale 처리 */
+const PRODUCT_LIST_CANVAS_WIDTH = 1700;
+const PRODUCT_LIST_DESKTOP_BASE_WIDTH = 1600;
+const PRODUCT_LIST_GALLERY_HEIGHT = 1300;
+const PRODUCT_LIST_FILTER_HEIGHT = 120;
+const PRODUCT_LIST_BODY_LIST_HEIGHT = 700;
+
+function useProductListScale() {
+  const shellRef = useRef<HTMLElement | null>(null);
+
+  /*
+    Desktop Responsive Initial Scale
+    ------------------------------------------
+    SPA 방식으로 서브페이지 진입 시 ResizeObserver 실행 전
+    canvas가 순간적으로 줄어드는 layout jump를 줄인다.
+  */
+  const [scale, setScale] = useState(() => {
+    if (typeof window === "undefined") {
+      return PRODUCT_LIST_DESKTOP_BASE_WIDTH / PRODUCT_LIST_CANVAS_WIDTH;
+    }
+
+    const initialWidth = Math.min(
+      document.documentElement.clientWidth || PRODUCT_LIST_DESKTOP_BASE_WIDTH,
+      PRODUCT_LIST_DESKTOP_BASE_WIDTH
+    );
+
+    return initialWidth / PRODUCT_LIST_CANVAS_WIDTH;
+  });
+
+  useEffect(() => {
+    const updateScale = () => {
+      const shellWidth =
+        shellRef.current?.getBoundingClientRect().width ||
+        document.documentElement.clientWidth ||
+        PRODUCT_LIST_DESKTOP_BASE_WIDTH;
+
+      /* Desktop Responsive
+         - 1600px 이상: 1600px를 원본 표시 기준으로 고정
+         - 1600px 이하: 부모 폭 기준으로 1700px canvas를 축소
+         - 100vw를 쓰지 않아 vertical scrollbar 폭으로 인한 가로 스크롤을 방지 */
+      const visibleWidth = Math.min(shellWidth, PRODUCT_LIST_DESKTOP_BASE_WIDTH);
+      const nextScale = visibleWidth / PRODUCT_LIST_CANVAS_WIDTH;
+
+      setScale(nextScale);
+    };
+
+    updateScale();
+
+    const resizeObserver = new ResizeObserver(updateScale);
+    if (shellRef.current) resizeObserver.observe(shellRef.current);
+
+    window.addEventListener("resize", updateScale);
+
+    return () => {
+      resizeObserver.disconnect();
+      window.removeEventListener("resize", updateScale);
+    };
+  }, []);
+
+  return { shellRef, scale };
+}
+
 /* ── 공통 스타일 ── */
 const STYLE = `
   .pl-product-shell {
-    width: 100vw;
+    /* Desktop Responsive
+       - 100vw 대신 부모 100% 기준
+       - 1024~1600 구간에서 가로 스크롤 방지 */
+    width: 100%;
+    min-width: 1024px;
     background: #ffffff;
-    overflow: visible;
+    overflow: hidden;
     display: flex;
     justify-content: center;
   }
 
   /*
-    메인 페이지 Hero와 동일한 100vw shell + 1700px canvas 구조.
+    메인 페이지 Hero와 동일한 1700px canvas 구조.
     Figma에서 가져온 절대적인 디자인 비율은 유지하고,
-    바깥 페이지만 100vw 기준으로 가운데 정렬한다.
+    바깥 shell에서 계산한 scale만 적용한다.
   */
   .pl-product-canvas {
     width: 1700px;
     flex-shrink: 0;
     background: #ffffff;
     overflow: visible;
+    transform-origin: top center;
+    will-change: transform;
   }
 
   .pl-filter-bar {
@@ -992,11 +1063,32 @@ export default function ProductList({
   const galleryUnderlineLeft = 167;
   const listUnderlineLeft = 311;
 
+  const { shellRef, scale } = useProductListScale();
+
+  /*
+    ProductList Dynamic Height
+    ------------------------------------------
+    Gallery / List view 높이가 다르므로
+    현재 viewMode에 맞춰 shell 높이를 scale 값과 함께 계산한다.
+  */
+  const canvasHeight =
+    viewMode === "gallery"
+      ? PRODUCT_LIST_GALLERY_HEIGHT
+      : PRODUCT_LIST_FILTER_HEIGHT + PRODUCT_LIST_BODY_LIST_HEIGHT;
+
   return (
-    <section className="pl-product-shell" aria-label="상품 목록">
+    <section
+      ref={shellRef}
+      className="pl-product-shell"
+      aria-label="상품 목록"
+      style={{ height: `${canvasHeight * scale}px` }}
+    >
       <style>{STYLE}</style>
 
-      <div className="pl-product-canvas">
+      <div
+        className="pl-product-canvas"
+        style={{ transform: `scale(${scale})` }}
+      >
         {/* ── FILTER BAR ── */}
         <div className="pl-filter-bar">
           <div className="pl-page-title">{pageTitle}</div>

@@ -1,9 +1,20 @@
+import { useEffect, useRef, useState } from "react";
 import svgPaths from "./svg-vaq8d9b51g";
 import img from "./050e70839c8a865a3bc5bf5529ebbff52dab7a81.png";
 import img1 from "./aa36fe66f91d4d474a7c3e64585689a25e85b055.png";
 
 const KAKAO_TALK_URL = "#";
 const INSTAGRAM_URL = "#";
+
+/* Desktop Responsive Scale System
+   ------------------------------------------
+   - Hero / Section2와 동일한 ResizeObserver 기준
+   - 1600px는 실제 min-width가 아니라 scale 계산 기준값
+   - 1700px Figma canvas의 absolute 좌표는 유지
+   - 1024~1600 구간에서는 부모 실제 width(clientWidth) 기준으로 축소 */
+const SECTION4_BASE_WIDTH = 1600;
+const SECTION4_CANVAS_WIDTH = 1700;
+const SECTION4_CANVAS_HEIGHT = 800;
 
 /* ==========================================================
    Section4 Clip Fix
@@ -109,7 +120,7 @@ function Frame4() {
   return (
     <div className="bg-white h-[62px] relative shrink-0 w-[650px]">
       <div className="content-stretch flex items-center overflow-visible px-[10px] py-px relative rounded-[inherit] size-full">
-        <div className="[word-break:break-word] flex flex-col font-en h-[24px] justify-center leading-[0] not-italic relative shrink-0 text-[#151515] text-[20px] w-[128px]">
+        <div className="[word-break:break-word] flex flex-col font-en h-[24px] justify-center leading-[0] not-italic relative shrink-0 text-[#151515] text-[18px] w-[160px]">
           <p className="leading-[24px]">TALK TO UNO</p>
         </div>
       </div>
@@ -122,7 +133,7 @@ function Frame4() {
 function Frame6() {
   return (
     <div className="bg-white content-stretch flex flex-col gap-[10px] items-start overflow-clip p-[10px] relative shrink-0">
-      <div className="[word-break:break-word] flex flex-col font-en h-[24px] justify-center leading-[0] not-italic relative shrink-0 text-[#151515] text-[20px] w-[128px]">
+      <div className="[word-break:break-word] flex flex-col font-en h-[24px] justify-center leading-[0] not-italic relative shrink-0 text-[#151515] text-[18px] w-[160px]">
         <p className="leading-[20px]">KOREA</p>
       </div>
       <div className="h-0 relative shrink-0 w-[20px]">
@@ -132,8 +143,16 @@ function Frame6() {
           </svg>
         </div>
       </div>
-      <div className="[word-break:break-word] flex flex-col font-en h-[24px] justify-center leading-[0] not-italic relative shrink-0 text-[#151515] text-[20px] w-[128px]">
-        <p className="leading-[24px]">031-998-2136</p>
+      <div className="[word-break:break-word] flex flex-col font-en h-[24px] justify-center leading-[0] not-italic relative shrink-0 text-[#151515] text-[18px] w-[160px]">
+        <p
+            className="leading-[22px]"
+            style={{
+              whiteSpace: "nowrap",
+              wordBreak: "keep-all",
+            }}
+          >
+            031-998-2136
+          </p>
       </div>
     </div>
   );
@@ -142,7 +161,7 @@ function Frame6() {
 function Frame7() {
   return (
     <div className="bg-white content-stretch flex flex-col gap-[10px] items-start overflow-clip p-[10px] relative shrink-0">
-      <div className="[word-break:break-word] flex flex-col font-en h-[24px] justify-center leading-[0] not-italic relative shrink-0 text-[#151515] text-[20px] w-[128px]">
+      <div className="[word-break:break-word] flex flex-col font-en h-[24px] justify-center leading-[0] not-italic relative shrink-0 text-[#151515] text-[18px] w-[160px]">
         <p className="leading-[20px]">KOREA</p>
       </div>
       <div className="h-0 relative shrink-0 w-[20px]">
@@ -152,8 +171,16 @@ function Frame7() {
           </svg>
         </div>
       </div>
-      <div className="[word-break:break-word] flex flex-col font-en h-[24px] justify-center leading-[0] not-italic relative shrink-0 text-[#151515] text-[20px] w-[128px]">
-        <p className="leading-[24px]">031-998-2136</p>
+      <div className="[word-break:break-word] flex flex-col font-en h-[24px] justify-center leading-[0] not-italic relative shrink-0 text-[#151515] text-[18px] w-[160px]">
+        <p
+            className="leading-[22px]"
+            style={{
+              whiteSpace: "nowrap",
+              wordBreak: "keep-all",
+            }}
+          >
+            031-998-2136
+          </p>
       </div>
     </div>
   );
@@ -162,7 +189,7 @@ function Frame7() {
 function Frame8() {
   return (
     <div className="bg-white content-stretch flex flex-col gap-[10px] items-start overflow-clip p-[10px] relative shrink-0">
-      <div className="[word-break:break-word] flex flex-col font-en h-[24px] justify-center leading-[0] not-italic relative shrink-0 text-[#151515] text-[20px] w-[128px]">
+      <div className="[word-break:break-word] flex flex-col font-en h-[24px] justify-center leading-[0] not-italic relative shrink-0 text-[#151515] text-[18px] w-[160px]">
         <p className="leading-[20px]">FRANCE</p>
       </div>
       <div className="h-0 relative shrink-0 w-[20px]">
@@ -172,8 +199,16 @@ function Frame8() {
           </svg>
         </div>
       </div>
-      <div className="[word-break:break-word] flex flex-col font-en h-[24px] justify-center leading-[0] not-italic relative shrink-0 text-[#151515] text-[20px] w-[128px]">
-        <p className="leading-[24px]">031-998-2136</p>
+      <div className="[word-break:break-word] flex flex-col font-en h-[24px] justify-center leading-[0] not-italic relative shrink-0 text-[#151515] text-[18px] w-[160px]">
+        <p
+            className="leading-[22px]"
+            style={{
+              whiteSpace: "nowrap",
+              wordBreak: "keep-all",
+            }}
+          >
+            031-998-2136
+          </p>
       </div>
     </div>
   );
@@ -330,9 +365,23 @@ function Frame1() {
   );
 }
 
-function Component3() {
+function Component3({ sectionScale }: { sectionScale: number }) {
   return (
-    <div className="bg-white h-[800px] mx-auto overflow-visible relative w-[1700px]" data-name="4번 섹션">
+    <div
+      className="section4-canvas bg-white h-[800px] overflow-visible relative w-[1700px]"
+      data-name="4번 섹션"
+      style={{
+        /* Desktop Responsive
+           - Section2처럼 React에서 계산한 부모 실제 width 기준 scale 사용
+           - 100vw media query를 쓰지 않아 1200~1580 구간에서 오른쪽이 잘리는 문제 방지 */
+        width: SECTION4_CANVAS_WIDTH,
+        transform: `translateX(-50%) scale(${sectionScale})`,
+      }}
+    >
+      {/* Desktop Responsive
+          - 1700px Figma canvas의 absolute 좌표는 유지
+          - 1600px는 실제 min-width가 아니라 scale 기준값으로만 사용
+          - 1024~1599 구간에서는 canvas 전체를 비율 축소해서 동일 레이아웃 유지 */}
       <Frame9 />
       <Frame1 />
     </div>
@@ -340,10 +389,49 @@ function Component3() {
 }
 
 function Component2() {
+  /* Desktop Responsive
+     ------------------------------------------
+     - Hero / Section2와 동일하게 ResizeObserver로 부모 실제 width를 읽는다.
+     - 1600px 이상에서는 원본 표시 기준, 1600px 미만에서는 동일 레이아웃을 비율 축소한다.
+     - min-width는 1024px 유지. */
+  const sectionRef = useRef<HTMLDivElement | null>(null);
+  const [sectionScale, setSectionScale] = useState(1);
+
+  useEffect(() => {
+    const target = sectionRef.current;
+    if (!target) return;
+
+    const updateScale = (width: number) => {
+      const safeWidth = Math.max(width, 1024);
+      const nextScale = Math.min(safeWidth / SECTION4_BASE_WIDTH, 1);
+      setSectionScale(nextScale);
+    };
+
+    updateScale(target.clientWidth);
+
+    const resizeObserver = new ResizeObserver((entries) => {
+      const entry = entries[0];
+      if (!entry) return;
+      updateScale(entry.contentRect.width);
+    });
+
+    resizeObserver.observe(target);
+
+    return () => {
+      resizeObserver.disconnect();
+    };
+  }, []);
+
   return (
     <div
-      className="absolute bg-white h-[800px] left-0 overflow-visible top-0 w-screen"
+      ref={sectionRef}
+      className="section4-viewport relative bg-white overflow-hidden w-full min-w-[1024px]"
       data-name="메인페이지-4번 섹션"
+      style={{
+        /* Desktop Responsive
+           - canvas가 scale될 때 실제 section 높이도 함께 축소 */
+        height: SECTION4_CANVAS_HEIGHT * sectionScale,
+      }}
     >
       <style>{`
         /*
@@ -365,15 +453,33 @@ function Component2() {
         .font-ko {
           font-family: var(--font-ko);
         }
+
+        /* Desktop Responsive Scale System
+           ------------------------------------------
+           - Hero / Section2와 동일하게 scale 값은 React ResizeObserver에서 계산
+           - CSS에서는 canvas의 기준 위치와 transform-origin만 관리 */
+        .section4-viewport {
+          width: 100%;
+          min-width: 1024px;
+          overflow: hidden;
+          position: relative;
+        }
+
+        .section4-canvas {
+          position: absolute;
+          left: 50%;
+          top: 0;
+          transform-origin: top center;
+        }
       `}</style>
-      <Component3 />
+      <Component3 sectionScale={sectionScale} />
     </div>
   );
 }
 
 export default function Component1() {
   return (
-    <div className="contents relative size-full" data-name="메인페이지-4번 섹션">
+    <div className="relative w-full min-w-[1024px] overflow-hidden" data-name="메인페이지-4번 섹션">
       <Component2 />
     </div>
   );

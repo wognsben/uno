@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import svgPaths from "./svg-nu881w2do7";
 import img1 from "./82946044a68c061ee150f4ee5fd02f4ec778c1b7.png";
 import imgImage32 from "./83f6e07e44eb6a5c6fed9fff909db3be08a145b9.png";
@@ -6,6 +6,18 @@ import imgImage36 from "./c1b601a0c99ab078ed746c6ccd1e66973503c4fe.png";
 import imgEllipse12 from "./1090b27e6a1fa96a24b337d63a32a80597cd1e74.png";
 import imgImage33 from "./47303b0d830f27edbf52edbc2a46b958efea3840.png";
 import imgImage30 from "./214fd7a095ebc0cb67d4f2373bbd229b6cc3cac6.png";
+
+/*
+  Section3 Desktop Responsive
+  ------------------------------------------
+  - 상단 무한 이동 슬라이더는 화면 끝에서 끝까지 보여야 하므로 100vw를 유지한다.
+  - 하단 WHAT NEXT 타이틀과 CTA 카드 영역은 1700px Figma canvas 좌표계를 유지한다.
+  - Desktop 기준 폭 1600px 이하에서는 ResizeObserver로 계산한 sectionScale만 적용한다.
+*/
+const SECTION3_BASE_WIDTH = 1600;
+const SECTION3_CANVAS_WIDTH = 1700;
+const SECTION3_CANVAS_HEIGHT = 1421;
+
 
 function Group() {
   return (
@@ -503,10 +515,12 @@ function Component3() {
   }, []);
 
   return (
-    <div className="absolute bg-white left-1/2 min-w-[1440px] overflow-visible p-0 top-[148px] w-screen -translate-x-1/2" data-name="03 스크롤 기반 슬라이더">
+    <div className="absolute bg-white left-1/2 overflow-visible p-0 top-[148px] w-screen -translate-x-1/2" data-name="03 스크롤 기반 슬라이더">
       <style>{`
         .where-marquee {
           position: relative;
+          width: 100vw;
+          height: 405px;
           overflow: visible;
         }
 
@@ -780,8 +794,8 @@ function Component3() {
 }
 function Frame11() {
   return (
-    <div className="absolute h-[100px] left-1/2 top-[688px] w-[1700px] -translate-x-1/2">
-      <div className="-translate-y-1/2 [word-break:break-word] absolute flex flex-col font-en h-[100px] justify-center leading-[0] left-0 not-italic text-[#151515] text-[140px] top-[50px] w-[866px]">
+    <div className="absolute h-[100px] left-0 top-[688px] w-[1700px]">
+      <div className="-translate-y-1/2 [word-break:break-word] absolute flex flex-col font-en h-[100px] justify-center leading-[0] left-[80px] not-italic text-[#151515] text-[140px] top-[50px] w-[866px]">
         <p className="leading-[40px]">WHAT NEXT?</p>
       </div>
     </div>
@@ -822,22 +836,22 @@ function Frame1() {
           </svg>
         </div>
       </div>
-      <div className="[word-break:break-word] flex flex-col font-ko h-[216px] justify-center leading-[0] relative shrink-0 text-[#151515] text-[24px] w-[300px] whitespace-pre-wrap" style={{ fontVariationSettings: '"wght" 400' }}>
+      <div className="[word-break:break-word] flex flex-col font-ko h-[216px] justify-center leading-[0] relative shrink-0 text-[#151515] text-[22px] w-[300px] whitespace-pre-wrap" style={{ fontVariationSettings: '"wght" 400' }}>
         <p className="mb-0">
           <span className="leading-[40px] text-white">ㆍ</span>
-          <span className="leading-[40px]">{`이탈리아 로마  `}</span>
+          <span className="leading-[36px]">{`이탈리아 로마  `}</span>
         </p>
         <p className="mb-0">
           <span className="leading-[40px] text-white">ㆍ</span>
-          <span className="leading-[40px]">{`서울 홍대 수령 `}</span>
+          <span className="leading-[36px]">{`서울 홍대 수령 `}</span>
         </p>
         <p className="mb-0">
           <span className="leading-[40px] text-white">ㆍ</span>
-          <span className="leading-[40px]">인천ㆍ김포ㆍ김해 공항 수령</span>
+         <span className="leading-[36px]">인천ㆍ김포ㆍ김해 공항 수령</span>
         </p>
         <p>
           <span className="leading-[40px] text-white">ㆍ</span>
-          <span className="leading-[40px]">택배 배송</span>
+          <span className="leading-[36px]">택배 배송</span>
         </p>
       </div>
     </div>
@@ -887,8 +901,8 @@ function Frame9() {
     <div role="button" tabIndex={0} onClick={() => {}} onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") event.currentTarget.click(); }} aria-label="공지사항 보기" className="bottom-cta-card bg-[#dad5d5] content-stretch flex flex-col h-[122px] items-center justify-center overflow-clip py-[10px] relative rounded-br-[100px] shrink-0 w-full">
       <div className="bottom-open-label is-dark">OPEN ↗</div>
       <div className="[word-break:break-word] flex flex-col font-ko-bold h-[80px] justify-center leading-[0] relative shrink-0 text-[#151515] text-[0px] text-center tracking-[-1.62px] w-[296px]" style={{ fontVariationSettings: '"wght" 700' }}>
-        <p className="leading-[30px] mb-0 text-[54px]">NOTICE</p>
-        <p className="leading-[30px] text-[20px]">공지사항</p>
+        <p className="leading-[54px] mb-[10px] text-[54px]">NOTICE</p>
+          <p className="leading-[24px] text-[20px]">공지사항</p>
       </div>
     </div>
   );
@@ -909,8 +923,8 @@ function Frame7() {
     <div role="button" tabIndex={0} onClick={() => {}} onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") event.currentTarget.click(); }} aria-label="여행후기 보기" className="bottom-cta-card review-card bg-[#dad5d5] content-stretch flex flex-col h-[306px] items-center overflow-clip pb-[10px] pt-[20px] relative rounded-tr-[100px] shrink-0 w-full">
       <div className="review-story-label">LATEST STORY ↗</div>
       <div className="[word-break:break-word] flex flex-col font-ko-bold h-[80px] justify-center leading-[0] relative shrink-0 text-[#151515] text-[0px] text-center tracking-[-1.62px] w-[296px]" style={{ fontVariationSettings: '"wght" 700' }}>
-        <p className="leading-[30px] mb-0 text-[54px]">REVIEW</p>
-        <p className="leading-[30px] text-[20px]">여행후기</p>
+        <p className="leading-[54px] mb-[10px] text-[54px]">REVIEW</p>
+<p className="leading-[24px] text-[20px]">여행후기</p>
       </div>
       <div className="relative shrink-0 size-[336px]" data-name="image 30">
         <img alt="" className="absolute inset-0 max-w-none object-cover pointer-events-none size-full" src={imgImage30} />
@@ -931,7 +945,7 @@ function Frame6() {
 
 function Frame3() {
   return (
-    <div className="absolute bg-white h-[526px] left-1/2 overflow-clip top-[894px] w-[1700px] -translate-x-1/2">
+    <div className="absolute bg-white h-[526px] left-0 overflow-clip top-[894px] w-[1700px]">
       <Frame10 />
       <Frame1 />
       <Frame4 />
@@ -942,8 +956,58 @@ function Frame3() {
 }
 
 function Frame() {
+  /*
+    Section3 Desktop Responsive
+    ------------------------------------------
+    - 부모 실제 width 기준으로 scale 값을 계산한다.
+    - Root height도 canvas scale에 맞춰 함께 변경한다.
+    - 상단 무한 이동 슬라이더는 100vw를 유지하고 scale 대상에서 제외한다.
+  */
+  const sectionRef = useRef<HTMLDivElement | null>(null);
+  const [sectionScale, setSectionScale] = useState(1);
+
+  /*
+    Section3 Dynamic Height
+    ------------------------------------------
+    Canvas가 scale되면 부모 height도 함께 변경한다.
+    App.tsx에서 고정 height를 사용하지 않도록 하기 위한 값.
+  */
+  const sectionHeight =
+    SECTION3_CANVAS_HEIGHT * sectionScale;
+
+  useEffect(() => {
+    const target = sectionRef.current;
+    if (!target) return;
+
+    const updateScale = (width: number) => {
+      const safeWidth = Math.max(width, 1024);
+      const nextScale = Math.min(safeWidth / SECTION3_BASE_WIDTH, 1);
+      setSectionScale(nextScale);
+    };
+
+    updateScale(target.clientWidth);
+
+    const resizeObserver = new ResizeObserver((entries) => {
+      const entry = entries[0];
+      if (!entry) return;
+      updateScale(entry.contentRect.width);
+    });
+
+    resizeObserver.observe(target);
+
+    return () => {
+      resizeObserver.disconnect();
+    };
+  }, []);
+
   return (
-    <div className="absolute bg-white h-[1421px] left-0 overflow-visible top-0 w-screen">
+    <div
+      ref={sectionRef}
+      className="relative bg-white min-w-[1024px] overflow-hidden w-full"
+      style={{
+        height: sectionHeight,
+      }}
+    >
       <style>{`
         /*
           Section3 Font Rules
@@ -965,18 +1029,43 @@ function Frame() {
         .font-ko-bold {
           font-family: var(--font-ko);
         }
+
+        /*
+          Section3 Desktop Responsive
+          ------------------------------------------
+          - 하단 WHAT NEXT 타이틀과 CTA 카드 영역만 1700px canvas로 묶는다.
+          - 상단 무한 이동 슬라이더는 100vw 유지가 필요하므로 이 stage에 포함하지 않는다.
+        */
+        .section3-responsive-stage {
+          position: absolute;
+          left: 50%;
+          top: 0;
+          width: ${SECTION3_CANVAS_WIDTH}px;
+          height: ${SECTION3_CANVAS_HEIGHT}px;
+          transform-origin: top center;
+          will-change: transform;
+        }
       `}</style>
-      <Component8 />
+
+      <div
+        className="section3-responsive-stage overflow-visible bg-white"
+        style={{
+          transform: `translateX(-50%) scale(${sectionScale})`,
+        }}
+      >
+        <Component8 />
+        <Frame11 />
+        <Frame3 />
+      </div>
+
       <Component3 />
-      <Frame11 />
-      <Frame3 />
     </div>
   );
 }
 
 export default function Component2() {
   return (
-    <div className="contents relative size-full" data-name="메인페이지-3번 섹션">
+    <div className="relative w-full min-w-[1024px] overflow-hidden" data-name="메인페이지-3번 섹션">
       <Frame />
     </div>
   );

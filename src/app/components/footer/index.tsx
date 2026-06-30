@@ -11,8 +11,21 @@ import imgImage43 from "./e1cbe6c063a42f81ec9aab230ab12273b9bce560.png";
 
 export default function Component({ className }: { className?: string }) {
   return (
-    <div className={className || "relative h-[760px] w-screen min-w-[1440px] overflow-hidden"} data-name="공통 푸터">
+    <div className={className || "relative w-full min-w-[1024px] overflow-hidden bg-white unotravel-footer-root"} data-name="공통 푸터">
       <style>{`
+        /* Desktop Responsive
+           - Footer root는 100vw 대신 100% 기준 사용
+           - 1024~1439 구간은 기존 1440px 레이아웃을 유지한 채 비율만 축소
+           - 1023 이하 Tablet Portrait / Mobile은 별도 CSS에서 재구성 */
+        .unotravel-footer-root {
+          height: clamp(541px, 52.7778vw, 760px);
+        }
+
+        .unotravel-footer-stage {
+          transform: scale(clamp(0.711111, calc(100vw / 1440), 1));
+          transform-origin: top center;
+        }
+
         .footer-logo-hover {
           cursor: pointer;
           transition: transform 0.32s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.32s ease;
@@ -123,7 +136,7 @@ export default function Component({ className }: { className?: string }) {
         }
       `}</style>
       <div className="absolute inset-0 bg-white overflow-hidden" data-name="푸터 정보란">
-        <div className="relative mx-auto h-full w-[1440px]">
+        <div className="relative mx-auto h-[760px] w-[1440px] unotravel-footer-stage">
           <div className="absolute bg-white h-[290px] left-0 top-0 w-[1440px]">
           <div className="content-stretch flex gap-[200px] items-center justify-center overflow-clip px-[20px] py-[10px] relative rounded-[inherit] size-full">
             <div className="footer-logo-hover h-[122px] relative shrink-0 w-[200px]" data-name="큰 로고 1">

@@ -7,7 +7,7 @@ import imgImage21 from "./82946044a68c061ee150f4ee5fd02f4ec778c1b7.png";
 
    수정 메모
    - 최상단 Header : 820px 카드형 중앙 배치
-   - 스크롤 Header : 100vw 전체 화면 폭
+   - 스크롤 Header : width: 100% 기준 전체 화면 폭
    - 기존 디자인/구조 유지, Header 폭 기준만 수정
 ──────────────────────────────────────────── */
 
@@ -113,9 +113,30 @@ function DotGrid({ isOpen, onClick }: { isOpen: boolean; onClick: () => void }) 
 
 function Logo() {
   return (
-    <a
-      href="/"
+    <button
+      type="button"
+
+      /*
+        SPA Navigation
+        ------------------------------------------
+        Logo 클릭 시 전체 페이지를 다시 로드하지 않는다.
+        ProductNavigation과 동일하게 history + custom event로 이동한다.
+      */
+      onClick={() => {
+        if (window.location.pathname === "/") {
+          window.scrollTo({
+            top: 0,
+            behavior: "smooth",
+          });
+          return;
+        }
+
+        window.history.pushState({}, "", "/");
+        window.dispatchEvent(new Event("unotravel:navigate"));
+      }}
+
       aria-label="UNOTRAVEL home"
+
       style={{
         width: 80,
         height: 46,
@@ -124,8 +145,12 @@ function Logo() {
         alignItems: "flex-start",
         justifyContent: "center",
         flexShrink: 0,
+        background: "none",
+        border: "none",
+        cursor: "pointer",
         textDecoration: "none",
         color: BLACK,
+        padding: 0,
       }}
     >
       <span
@@ -153,7 +178,7 @@ function Logo() {
       >
         T·R·A·V·E·L
       </span>
-    </a>
+    </button>
   );
 }
 
@@ -280,7 +305,10 @@ function ShortMenuPanel({ isOpen, onClose, isScrolled }: { isOpen: boolean; onCl
         overflow: "hidden",
         background: "#FFFFFF",
         border: `2px solid ${BORDER}`,
-        borderRadius: 20,
+        /* Header Radius
+   - 최상단: 플로팅 카드 형태라 radius 유지
+   - 스크롤: 전체 폭 앱바 형태라 radius 제거 */
+borderRadius: isScrolled ? 0 : 20,
         boxSizing: "border-box",
         pointerEvents: isOpen ? "auto" : "none",
         transition:
@@ -570,8 +598,9 @@ export default function Header({ isLoggedIn = false, userName = "김민수" }: H
 
         /* Header Root
            - 최상단: 내부 Header 카드(820px)를 화면 중앙에 배치
-           - 스크롤: Header가 실제 viewport 전체 폭(100vw)을 사용 */
-        width: "100vw",
+           - 스크롤: 100vw가 아닌 부모 기준 100% 사용
+           - 100vw로 인한 브라우저 스크롤바 포함 가로 넘침 방지 */
+        width: "100%",
 
         display: "flex",
         justifyContent: "center",
@@ -604,9 +633,10 @@ export default function Header({ isLoggedIn = false, userName = "김민수" }: H
 
           /* Header Width Controller
              - 최상단: 820px 고정 카드
-             - 스크롤: top 이동 후 0.16초 뒤 100vw로 부드럽게 확장 */
-          width: isHeaderExpanded ? "100vw" : 820,
-          maxWidth: isHeaderExpanded ? "100vw" : 820,
+             - 스크롤: top 이동 후 0.16초 뒤 부모 기준 100%로 부드럽게 확장
+             - Section3 Horizontal Slider 외에는 100vw 사용 금지 */
+          width: isHeaderExpanded ? "100%" : 820,
+          maxWidth: isHeaderExpanded ? "100%" : 820,
 
           margin: "0 auto",
           pointerEvents: "none",
@@ -617,7 +647,7 @@ export default function Header({ isLoggedIn = false, userName = "김민수" }: H
   style={{
     /* Header Size
        - 최상단: 820px x 90px
-       - 스크롤: 100vw x 110px */
+       - 스크롤: 100% x 110px */
     width: "100%",
     maxWidth: "100%",
     height: isScrolled ? 110 : 90,
@@ -628,7 +658,10 @@ export default function Header({ isLoggedIn = false, userName = "김민수" }: H
       ? "0 solid transparent"
       : `2px solid ${BORDER}`,
 
-    borderRadius: 20,
+    /* Header Radius
+   - 최상단: 플로팅 카드 형태라 radius 유지
+   - 스크롤: 전체 폭 앱바 형태라 radius 제거 */
+borderRadius: isScrolled ? 0 : 20,
 
     display: "flex",
     flexDirection: "row",

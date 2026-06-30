@@ -1,5 +1,21 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import imgImage10 from "./45f0f4367d0864282c8c2c2a4259edb97f283fb8.png";
+
+/*
+  ProductNavigation 공통화
+  ------------------------------------------
+  메인 Hero 내부 전용 HeroNavigation 대신
+  모든 페이지에서 사용하는 공통 ProductNavigation을 사용한다.
+*/
+import ProductNavigation from "../../app/components/common_navi/ProductNavigation";
+
+/* Desktop Responsive Base
+   - 실제 카드 배치 canvas는 Figma 기준 1700px
+   - 화면에서 보이는 desktop 원본 기준은 1600px로 제한
+   - 1600px 이하에서는 canvas 전체를 부모 폭에 맞춰 scale 처리 */
+const HERO_CANVAS_WIDTH = 1700;
+const HERO_DESKTOP_BASE_WIDTH = 1600;
+const HERO_CANVAS_HEIGHT = 725;
 
 type HeroCategory = "semi" | "daily";
 
@@ -96,8 +112,6 @@ const HERO_ITEMS: HeroItem[] = [
   },
 ];
 
-const SEMI_ITEMS = HERO_ITEMS.filter((item) => item.category === "semi");
-const DAILY_ITEMS = HERO_ITEMS.filter((item) => item.category === "daily");
 
 function useHeroRotation() {
   const [activeIndex, setActiveIndex] = useState(0);
@@ -111,6 +125,60 @@ function useHeroRotation() {
   }, []);
 
   return { activeIndex, setActiveIndex };
+}
+
+function useDesktopHeroScale() {
+  const shellRef = useRef<HTMLDivElement | null>(null);
+  /*
+  Desktop Responsive Initial Scale
+  ------------------------------------------
+  Logo / ProductNavigation 등 SPA 방식으로 메인 Hero에 재진입할 때
+  ResizeObserver가 실행되기 전 초기 scale이 잘못 잡혀 카드가 순간적으로 줄어드는 현상을 줄인다.
+*/
+const [scale, setScale] = useState(() => {
+  if (typeof window === "undefined") {
+    return HERO_DESKTOP_BASE_WIDTH / HERO_CANVAS_WIDTH;
+  }
+
+  const initialWidth = Math.min(
+    document.documentElement.clientWidth || HERO_DESKTOP_BASE_WIDTH,
+    HERO_DESKTOP_BASE_WIDTH
+  );
+
+  return initialWidth / HERO_CANVAS_WIDTH;
+});
+
+  useEffect(() => {
+    const updateScale = () => {
+      const shellWidth =
+        shellRef.current?.getBoundingClientRect().width ||
+        document.documentElement.clientWidth ||
+        HERO_DESKTOP_BASE_WIDTH;
+
+      /* Desktop Responsive
+         - 1600px 이상: 1600px를 원본 표시 기준으로 고정
+         - 1600px 이하: 부모 폭 기준으로 1700px canvas를 축소
+         - 100vw를 쓰지 않아 vertical scrollbar 폭으로 인한 가로 스크롤을 방지 */
+      const visibleWidth = Math.min(shellWidth, HERO_DESKTOP_BASE_WIDTH);
+      const nextScale = visibleWidth / HERO_CANVAS_WIDTH;
+
+      setScale(nextScale);
+    };
+
+    updateScale();
+
+    const resizeObserver = new ResizeObserver(updateScale);
+    if (shellRef.current) resizeObserver.observe(shellRef.current);
+
+    window.addEventListener("resize", updateScale);
+
+    return () => {
+      resizeObserver.disconnect();
+      window.removeEventListener("resize", updateScale);
+    };
+  }, []);
+
+  return { shellRef, scale };
 }
 
 function SharedImage({
@@ -127,56 +195,6 @@ function SharedImage({
       src={item.image}
       decoding="async"
     />
-  );
-}
-
-function HeroNavigation({
-  activeItem,
-  onSelect,
-  onNavigate,
-}: {
-  activeItem: HeroItem;
-  onSelect: (id: string) => void;
-  /** ProductTemplate 연결: 클릭 시 해당 상품 서브페이지로 이동 */
-  onNavigate: (item: HeroItem) => void;
-}) {
-  const renderCountry = (item: HeroItem) => {
-    const isActive = item.id === activeItem.id;
-
-    return (
-      <button
-        key={item.id}
-        type="button"
-        onMouseEnter={() => onSelect(item.id)}
-        onFocus={() => onSelect(item.id)}
-        onClick={() => onNavigate(item)}
-        className={`hero-nav-country ${isActive ? "is-active" : ""}`}
-        aria-pressed={isActive}
-      >
-        <span className="hero-nav-country-en">{item.country}</span>
-        <span className="hero-nav-country-ko">{item.countryKo}</span>
-      </button>
-    );
-  };
-
-  return (
-    <div className="hero-product-nav" aria-label="Main product category navigation">
-      <div className="hero-nav-block hero-nav-block--semi">
-        <div className="hero-nav-title">SEMI PACKAGE</div>
-        <div className="hero-country-list hero-country-list--semi">
-          {SEMI_ITEMS.map(renderCountry)}
-        </div>
-      </div>
-
-      <div className="hero-nav-divider" />
-
-      <div className="hero-nav-block hero-nav-block--daily">
-        <div className="hero-nav-title">DAILY TOUR</div>
-        <div className="hero-country-list hero-country-list--daily">
-          {DAILY_ITEMS.map(renderCountry)}
-        </div>
-      </div>
-    </div>
   );
 }
 
@@ -344,9 +362,28 @@ function Group({ item }: { item: HeroItem }) {
 }
 
 function Frame1({ item }: { item: HeroItem }) {
+  const { shellRef, scale } = useDesktopHeroScale();
+
   return (
-    <div className="hero-grid-shell bg-white h-[725px] overflow-visible relative shrink-0 w-screen">
-      <div className="absolute left-1/2 top-0 h-[725px] w-[1700px] -translate-x-1/2">
+    <div
+      ref={shellRef}
+      className="hero-grid-shell bg-white overflow-hidden relative shrink-0 w-full"
+      style={{
+        /* Desktop Responsive
+           - 1700px 기준 Figma 카드 배치는 유지
+           - 1600px를 desktop 원본 표시 기준으로 사용
+           - 부모 실제 width 기준으로 canvas를 축소해 1024~1600 구간 가로 스크롤을 방지 */
+        height: `${HERO_CANVAS_HEIGHT * scale}px`,
+      }}
+    >
+      <div
+        className="hero-grid-canvas absolute left-1/2 top-0 h-[725px] w-[1700px]"
+        style={{
+          /* Desktop Responsive
+             - 카드 좌표는 그대로 두고 stage 전체만 scale 처리 */
+          transform: `translateX(-50%) scale(${scale})`,
+        }}
+      >
         <Group item={item} />
       </div>
     </div>
@@ -354,40 +391,25 @@ function Frame1({ item }: { item: HeroItem }) {
 }
 
 export default function Frame() {
-  const { activeIndex, setActiveIndex } = useHeroRotation();
+  const { activeIndex } = useHeroRotation();
   const activeItem = HERO_ITEMS[activeIndex];
 
   const loadedImages = useMemo(() => HERO_ITEMS.map((item) => item.image), []);
 
-  const handleSelect = (id: string) => {
-    const nextIndex = HERO_ITEMS.findIndex((item) => item.id === id);
-    if (nextIndex >= 0) {
-      setActiveIndex(nextIndex);
-    }
-  };
-
-  const handleNavigate = (item: HeroItem) => {
-    /*
-      ProductTemplate 연결 지점
-
-      현재 임시 라우트:
-      - /product/semi/italy?view=gallery
-      - /product/daily/italy?view=gallery
-
-      실제 우노트래블 PHP 백엔드 연동 시
-      아래 item.href 값만 기존 URL 규칙에 맞게 교체하면 된다.
-    */
-    window.history.pushState({}, "", item.href);
-window.dispatchEvent(new Event("unotravel:navigate"));
-  };
-
   return (
-    <div className="absolute left-0 top-0 h-[1040px] w-screen overflow-visible bg-white">
-      <div className="relative h-full w-screen">
-        <div className="bg-white content-stretch flex flex-col items-center justify-start pb-[54px] pt-[88px] px-0 relative size-full">
+    <div className="absolute left-0 top-0 h-[1040px] w-full min-w-[1024px] overflow-hidden bg-white">
+      {/* Desktop Responsive
+          - Main Hero root는 100vw 대신 100% 기준
+          - Desktop/Tablet Landscape 최소 폭은 1024px 유지 */}
+      <div className="relative h-full w-full min-w-[1024px] overflow-hidden">
+        <div className="bg-white content-stretch flex flex-col items-center justify-start pb-[54px] pt-[88px] px-0 relative size-full overflow-hidden">
       <style>{`
         .hero-product-nav {
-          width: 100vw;
+          /* Desktop Responsive
+             - ProductNavigation은 Section3 Slider가 아니므로 100vw 사용 금지
+             - 부모 폭 기준 100% 사용, 1700px 이상에서는 기존 편집형 폭 유지 */
+          width: 100%;
+          max-width: 1600px;
           min-height: 170px;
           margin-bottom: 22px;
           border: 1px solid rgba(21, 21, 21, 0.12);
@@ -529,8 +551,108 @@ window.dispatchEvent(new Event("unotravel:navigate"));
           outline-offset: 8px;
         }
 
+
+        /*
+          Main Hero ProductNavigation Override
+          ------------------------------------------
+          공통 ProductNavigation을 메인 Hero 안에서 사용할 때의 폭 보정.
+          ProductNavigation 내부 className은 그대로 유지하되,
+          메인 Hero에서는 100vw가 아닌 부모 100% / 최대 1600px 기준으로 표시한다.
+
+          Mega Panel이 아래로 펼쳐져야 하므로
+          hero-product-nav 자체는 overflow visible로 보정한다.
+        */
+        .main-hero-product-navigation {
+          width: 100%;
+          max-width: 1600px;
+          margin-bottom: 22px;
+          position: relative;
+          z-index: 30;
+        }
+
+        .main-hero-product-navigation .hero-product-nav {
+          width: 100%;
+          max-width: 1600px;
+          margin-bottom: 0;
+          overflow: visible;
+        }
+
         .hero-grid-shell {
+          /* Desktop Responsive
+             - Hero 이미지 카드 영역은 부모 100% 기준
+             - 1700px Figma canvas는 React에서 계산한 scale로 축소
+             - 표시 기준은 1600px로 제한 */
+          width: 100%;
+          max-width: 100%;
+          min-width: 1024px;
           border-radius: 0;
+          overflow: hidden;
+        }
+
+        .hero-grid-canvas {
+          transform-origin: top center;
+          will-change: transform;
+        }
+
+        /* Desktop Minimum Responsive
+           - 1024~1600px 구간에서는 grid 구조 변경 없이 canvas만 비율 축소
+           - layout/grid 자체는 유지하고, overflow를 줄여 가로 스크롤을 방지 */
+        @media (min-width: 1024px) and (max-width: 1599px) {
+          .hero-product-nav {
+            min-height: 154px;
+            margin-bottom: 18px;
+          }
+
+          .hero-nav-block {
+            padding: 22px 24px 24px;
+          }
+
+          .hero-nav-title {
+            font-size: clamp(26px, 2.35vw, 34px);
+            margin-bottom: 24px;
+          }
+
+          .hero-nav-country {
+            padding: 0 clamp(14px, 2.1vw, 30px);
+          }
+
+          .hero-nav-country-en {
+            font-size: clamp(13px, 1.2vw, 17px);
+          }
+
+          .hero-nav-country-ko {
+            font-size: clamp(11px, 1vw, 13px);
+          }
+
+  
+        /*
+          Main Hero ProductNavigation Override
+          ------------------------------------------
+          공통 ProductNavigation을 메인 Hero 안에서 사용할 때의 폭 보정.
+          ProductNavigation 내부 className은 그대로 유지하되,
+          메인 Hero에서는 100vw가 아닌 부모 100% / 최대 1600px 기준으로 표시한다.
+
+          Mega Panel이 아래로 펼쳐져야 하므로
+          hero-product-nav 자체는 overflow visible로 보정한다.
+        */
+        .main-hero-product-navigation {
+          width: 100%;
+          max-width: 1600px;
+          margin-bottom: 22px;
+          position: relative;
+          z-index: 30;
+        }
+
+        .main-hero-product-navigation .hero-product-nav {
+          width: 100%;
+          max-width: 1600px;
+          margin-bottom: 0;
+          overflow: visible;
+        }
+
+        .hero-grid-shell {
+            min-height: 0;
+          }
         }
 
         .hero-shared-image {
@@ -559,7 +681,17 @@ window.dispatchEvent(new Event("unotravel:navigate"));
         }
       `}</style>
 
-      <HeroNavigation activeItem={activeItem} onSelect={handleSelect} onNavigate={handleNavigate} />
+      {/*
+        ProductNavigation 공통화
+        ------------------------------------------
+        기존 메인 Hero 전용 HeroNavigation을 제거하고
+        서브페이지와 동일한 공통 ProductNavigation을 사용한다.
+        따라서 ProductNavigation의 hover Mega Panel 수정사항이
+        메인페이지와 서브페이지에 동일하게 반영된다.
+      */}
+      <div className="main-hero-product-navigation">
+        <ProductNavigation />
+      </div>
 
       <div aria-hidden="true" className="hidden">
         {loadedImages.map((image) => (

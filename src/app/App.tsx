@@ -1,7 +1,7 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
-import Footer from "./components/공통푸터/index";
-import Header from "./components/공통헤더/index";
+import Footer from "./components/footer/index";
+import Header from "./components/header/index";
 
 import Intro from "../imports/INTRO/INTRO";
 
@@ -217,11 +217,42 @@ function ScrollCard({ card }: { card: (typeof scrollCards)[number] }) {
   );
 }
 
+/*
+  Main Page Scroll Restore
+  ------------------------------------------
+  메인페이지에서 상품 서브페이지로 이동하기 전의 scrollY를 저장한다.
+  브라우저 뒤로가기로 상품 서브페이지에서 메인페이지로 돌아올 때
+  사용자가 보고 있던 메인페이지 위치를 복원한다.
+*/
+const MAIN_SCROLL_STORAGE_KEY = "unotravel_main_scroll_y";
+
+const getStoredMainScrollY = () => {
+  if (typeof window === "undefined") {
+    return 0;
+  }
+
+  const storedValue = sessionStorage.getItem(MAIN_SCROLL_STORAGE_KEY);
+  const parsedValue = storedValue ? Number(storedValue) : 0;
+
+  return Number.isFinite(parsedValue) ? parsedValue : 0;
+};
+
 /* ────────────────────────────────────────────
    Page
 ──────────────────────────────────────────── */
 export default function App() {
-  const [showIntro, setShowIntro] = useState(true);
+  const previousPathnameRef = useRef(window.location.pathname);
+  const shouldRestoreMainScrollRef = useRef(false);
+
+  /*
+  Intro
+  ------------------------------------------
+  브라우저 세션 기준 최초 진입에서만 Intro를 실행한다.
+  이후 Logo 클릭 또는 메인 재진입 시에는 Intro를 다시 보여주지 않는다.
+*/
+const [showIntro, setShowIntro] = useState(() => {
+  return sessionStorage.getItem("uno_intro_played") !== "true";
+});
 
   /*
     ProductTemplate 임시 라우팅
@@ -240,8 +271,48 @@ export default function App() {
   const [pathname, setPathname] = useState(window.location.pathname);
 
 useEffect(() => {
-  const handleRouteChange = () => {
-    setPathname(window.location.pathname);
+  /*
+    SPA Scroll Restoration
+    ------------------------------------------
+    브라우저 기본 scroll 복원과 App 내부 route 렌더링 타이밍이 충돌하지 않도록
+    수동 복원 방식으로 통일한다.
+  */
+  if ("scrollRestoration" in window.history) {
+    window.history.scrollRestoration = "manual";
+  }
+
+  const handleRouteChange = (event: Event) => {
+    const previousPathname = previousPathnameRef.current;
+    const nextPathname = window.location.pathname;
+
+    const wasProductPage = previousPathname.startsWith("/product/");
+    const willBeProductPage = nextPathname.startsWith("/product/");
+
+    /*
+      Main Scroll Save
+      ------------------------------------------
+      메인페이지에서 상품 서브페이지로 이동하기 직전의 scrollY를 저장한다.
+      unotravel:navigate 이벤트는 pushState 이후 발생하지만,
+      화면은 아직 리렌더링 전이므로 현재 scrollY를 안전하게 읽을 수 있다.
+    */
+    if (!wasProductPage) {
+      sessionStorage.setItem(MAIN_SCROLL_STORAGE_KEY, String(window.scrollY));
+    }
+
+    /*
+      Back Navigation Scroll Restore Flag
+      ------------------------------------------
+      상품 서브페이지에서 브라우저 뒤로가기로 메인페이지에 돌아오는 경우에만
+      기존 메인페이지 위치를 복원한다.
+
+      Logo 클릭 등 programmatic navigation은 새 진입으로 보고
+      스크롤 복원 대상에서 제외한다.
+    */
+    shouldRestoreMainScrollRef.current =
+      event.type === "popstate" && wasProductPage && !willBeProductPage;
+
+    previousPathnameRef.current = nextPathname;
+    setPathname(nextPathname);
   };
 
   window.addEventListener("popstate", handleRouteChange);
@@ -253,13 +324,71 @@ useEffect(() => {
   };
 }, []);
 
+useEffect(() => {
+  /*
+    Main Scroll Tracking
+    ------------------------------------------
+    메인페이지를 보고 있는 동안 최신 scrollY를 계속 저장한다.
+    상품 서브페이지에서는 저장값을 덮어쓰지 않는다.
+  */
+  const handleMainScroll = () => {
+    if (window.location.pathname.startsWith("/product/")) {
+      return;
+    }
+
+    sessionStorage.setItem(MAIN_SCROLL_STORAGE_KEY, String(window.scrollY));
+  };
+
+  window.addEventListener("scroll", handleMainScroll, { passive: true });
+
+  return () => {
+    window.removeEventListener("scroll", handleMainScroll);
+  };
+}, []);
+
+useEffect(() => {
+  if (pathname.startsWith("/product/")) {
+    return;
+  }
+
+  if (!shouldRestoreMainScrollRef.current) {
+    return;
+  }
+
+  shouldRestoreMainScrollRef.current = false;
+
+  /*
+    Main Scroll Restore
+    ------------------------------------------
+    메인페이지 섹션들이 다시 렌더링되고 각 섹션의 Dynamic Height가 잡힌 뒤
+    저장된 위치로 복원한다.
+  */
+  const restoreScrollY = getStoredMainScrollY();
+
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      window.scrollTo({
+        top: restoreScrollY,
+        left: 0,
+        behavior: "auto",
+      });
+    });
+  });
+}, [pathname]);
+
 const isProductPage = pathname.startsWith("/product/");
 
   const sectionShell = {
     position: "relative" as const,
-    width: "100vw",
+
+    /* Desktop Responsive
+       - Section3 Horizontal Slider를 제외한 App shell은 100vw 대신 100% 기준 사용
+       - 100vw는 scrollbar 폭까지 포함되어 가로 스크롤을 만들 수 있음 */
+    width: "100%",
+    minWidth: 1024,
+
     flexShrink: 0,
-    overflow: "visible" as const,
+    overflow: "hidden" as const,
   };
 
   return (
@@ -267,16 +396,22 @@ const isProductPage = pathname.startsWith("/product/");
       {/* Intro */}
       {!isProductPage && showIntro && (
         <Intro
-          onFinish={() => {
-            setShowIntro(false);
-          }}
-        />
+  onFinish={() => {
+    sessionStorage.setItem("uno_intro_played", "true");
+    setShowIntro(false);
+  }}
+/>
       )}
 
       {/* Main */}
       <div
         style={{
-          width: "100vw",
+          /* Desktop Responsive
+             - App root는 100vw 대신 100% 기준
+             - Desktop/Tablet Landscape 최소 폭은 1024px 유지 */
+          width: "100%",
+          minWidth: 1024,
+
           background: "#FFFFFF",
           display: "flex",
           flexDirection: "column",
@@ -288,11 +423,14 @@ const isProductPage = pathname.startsWith("/product/");
         {/* Header */}
         <div
           style={{
-            width: "100vw",
+            /* Desktop Responsive
+               - Header wrapper도 100vw 대신 부모 기준 100% 사용 */
+            width: "100%",
             boxSizing: "border-box",
             padding: "51px 55px 0",
             display: "flex",
             justifyContent: "center",
+            overflow: "hidden",
           }}
         >
           <Header />
@@ -345,20 +483,32 @@ const isProductPage = pathname.startsWith("/product/");
             </div>
 
             {/* Section3 */}
-            <div
-              style={{
-                ...sectionShell,
-                height: 1421,
-              }}
-            >
-              <Section3Component />
-            </div>
+<div
+  style={{
+    ...sectionShell,
+
+    /* Desktop Responsive Exception
+       ------------------------------------------
+       Section3 내부에서 ResizeObserver + Dynamic Height를 직접 관리한다.
+       상단 무한 Horizontal Slider만 Section3 내부에서 100vw를 유지한다.
+       App.tsx에서는 고정 height를 주지 않는다.
+    */
+    width: "100%",
+    minWidth: 1024,
+    overflow: "hidden",
+  }}
+>
+  <Section3Component />
+</div>
 
             {/* Section4 */}
             <div
               style={{
                 ...sectionShell,
-                height: 900,
+
+                /* Desktop Responsive Height
+                   - Section4는 내부 ResizeObserver scale 기준으로 실제 높이를 직접 관리한다.
+                   - App에서 고정 height를 주면 화면 폭이 줄어들 때 하단 공백이 생긴다. */
               }}
             >
               <Section4Component />
@@ -369,12 +519,15 @@ const isProductPage = pathname.startsWith("/product/");
         {/* Footer */}
         <div
           style={{
-            width: "100vw",
+            /* Desktop Responsive
+               - Footer wrapper도 100vw 대신 부모 기준 100% 사용 */
+            width: "100%",
+            minWidth: 1024,
             flexShrink: 0,
-            overflow: "visible",
+            overflow: "hidden",
           }}
         >
-          <Footer className="relative h-[760px] w-screen" />
+          <Footer className="relative h-[760px] w-full min-w-[1024px] overflow-hidden" />
         </div>
       </div>
     </>

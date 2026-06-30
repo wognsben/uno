@@ -102,6 +102,17 @@ const CATEGORY_LABELS: Record<CategoryKey, { title: string; shortTitle: string; 
   },
 };
 
+/*
+  Section2 Desktop Responsive
+  ------------------------------------------
+  - 원본 Figma canvas는 1700px 좌표계를 유지한다.
+  - Desktop 기준 폭은 1600px로 잡고, 1600px 이하에서는 canvas 전체를 scale한다.
+  - 카드/이미지/absolute 좌표는 수정하지 않아 기존 디자인을 보존한다.
+*/
+const SECTION2_BASE_WIDTH = 1600;
+const SECTION2_CANVAS_WIDTH = 1700;
+const SECTION2_CANVAS_HEIGHT = 1245;
+
 function Group() {
   return (
     <div className="grid-cols-[max-content] grid-rows-[max-content] inline-grid leading-[0] place-items-start relative shrink-0">
@@ -628,8 +639,83 @@ function Frame() {
   const [hasInteracted, setHasInteracted] = useState(false);
   const items = category === "semi" ? SEMI_PACKAGE_ITEMS : DAILY_TOUR_ITEMS;
 
+  /*
+    Section2 Desktop Responsive
+    ------------------------------------------
+    - 부모 실제 width 기준으로 scale 값을 계산한다.
+    - 100vw를 직접 사용하지 않아 세로 스크롤바 폭 때문에 생기는 가로 스크롤을 방지한다.
+    - 1600px 이상에서는 원본 크기, 1600px 미만에서는 동일 레이아웃을 비율 축소한다.
+  */
+const sectionRef = useRef<HTMLDivElement | null>(null);
+
+/*
+  Section2 Desktop Responsive Initial Scale
+  ------------------------------------------
+  Logo / ProductNavigation 등 SPA 방식으로
+  메인페이지에 재진입할 때 ResizeObserver가 실행되기 전
+  초기 scale이 잘못 적용되어 레이아웃이 순간적으로
+  줄어드는 현상을 줄인다.
+*/
+/*
+  Section2 Desktop Responsive Scale Calculator
+  ------------------------------------------
+  초기 렌더링과 ResizeObserver에서 동일한 계산식을 사용한다.
+  계산 기준이 달라져 SPA 이동 시 확대/축소가 한 프레임 늦게 보이는 현상을 줄인다.
+*/
+const getSectionScale = (width: number) => {
+  const safeWidth = Math.max(width, 1024);
+  return Math.min(safeWidth / SECTION2_BASE_WIDTH, 1);
+};
+
+const [sectionScale, setSectionScale] = useState(() => {
+  if (typeof window === "undefined") {
+    return 1;
+  }
+
+  return getSectionScale(document.documentElement.clientWidth || SECTION2_BASE_WIDTH);
+});
+
+  /*
+    Section2 Dynamic Height
+    ------------------------------------------
+    Canvas가 scale되면 부모 height도 함께 변경한다.
+    App.tsx에서 고정 height를 사용하지 않도록 하기 위한 값.
+  */
+  const sectionHeight =
+    SECTION2_CANVAS_HEIGHT * sectionScale;
+
+  useEffect(() => {
+    const target = sectionRef.current;
+    if (!target) return;
+
+    const updateScale = (width: number) => {
+  const nextScale = getSectionScale(width);
+  setSectionScale(nextScale);
+};
+
+    updateScale(target.clientWidth);
+
+    const resizeObserver = new ResizeObserver((entries) => {
+      const entry = entries[0];
+      if (!entry) return;
+      updateScale(entry.contentRect.width);
+    });
+
+    resizeObserver.observe(target);
+
+    return () => {
+      resizeObserver.disconnect();
+    };
+  }, []);
+
   return (
-    <div className="absolute left-0 top-0 h-[1245px] w-screen overflow-hidden bg-white">
+    <div
+      ref={sectionRef}
+      className="absolute left-0 top-0 w-full min-w-[1024px] overflow-hidden bg-white"
+      style={{
+        height: sectionHeight,
+      }}
+    >
       <style>{`
         /*
           Section2 Font Rules
@@ -650,9 +736,31 @@ function Frame() {
         .font-mixed {
           font-family: var(--font-ko);
         }
+
+        /*
+          Section2 Desktop Responsive
+          ------------------------------------------
+          - Section3 Slider가 아니므로 w-screen/100vw를 사용하지 않는다.
+          - 1700px Figma canvas는 absolute stage 안에서만 유지한다.
+          - stage가 normal flow 폭을 밀지 않도록 부모는 overflow hidden 처리한다.
+        */
+        .section2-responsive-stage {
+          position: absolute;
+          left: 50%;
+          top: 0;
+          width: ${SECTION2_CANVAS_WIDTH}px;
+          height: ${SECTION2_CANVAS_HEIGHT}px;
+          transform-origin: top center;
+          will-change: transform;
+        }
       `}</style>
 
-      <div className="relative mx-auto h-[1245px] w-[1700px] overflow-visible bg-white">
+      <div
+        className="section2-responsive-stage overflow-visible bg-white"
+        style={{
+          transform: `translateX(-50%) scale(${sectionScale})`,
+        }}
+      >
         <Frame1 />
         <PremiumSemiPackage
           items={items}
@@ -691,7 +799,7 @@ function Frame() {
 
 export default function Component2() {
   return (
-    <div className="contents relative size-full" data-name="메인페이지-2번 섹션">
+    <div className="relative h-full w-full min-w-[1024px] overflow-hidden" data-name="메인페이지-2번 섹션">
       <Frame />
     </div>
   );

@@ -70,7 +70,11 @@ export default function CategoryFilter({
     <section className="product-category-section" aria-label="상품 상위 네비게이션">
       <style>{`
         .product-category-section {
-          width: 100vw;
+          /* Desktop Responsive
+             - 100vw 사용 금지
+             - 메인 Hero와 동일하게 부모 100% 기준 */
+          width: 100%;
+          min-width: 1024px;
           background: #ffffff;
         }
 
@@ -81,6 +85,11 @@ export default function CategoryFilter({
           기존 3단 CATEGORY Grid를 2단 상품군 Navigation으로 변경.
         */
         .product-category-inner {
+          /* Desktop Responsive
+             - ProductNavigation / Main Hero 기준과 동일하게 1600px 표시 폭 제한 */
+          width: 100%;
+          max-width: 1600px;
+          margin: 0 auto;
           min-height: 132px;
           display: grid;
           grid-template-columns: 1fr 1px 0.82fr;
@@ -281,48 +290,6 @@ export default function CategoryFilter({
           }
         }
       `}</style>
-
-      <div className="product-editorial-grid product-category-inner">
-        <div className="product-nav-block product-nav-block--semi">
-          <div className="product-nav-title">SEMI PACKAGE</div>
-
-          <div className="product-nav-list" aria-label="세미패키지 국가 네비게이션">
-            {semiCategories.map((category) => (
-              <button
-                key={category.id}
-                type="button"
-                className={`product-nav-item ${activeCategory === category.id ? "is-active" : ""}`}
-                aria-pressed={activeCategory === category.id}
-                onClick={() => onCategoryChange(category.id)}
-              >
-                <span className="product-nav-en">{getCategoryLabelEn(category)}</span>
-                <span className="product-nav-ko">{category.label}</span>
-              </button>
-            ))}
-          </div>
-        </div>
-
-        <div className="product-nav-divider" />
-
-        <div className="product-nav-block product-nav-block--daily">
-          <div className="product-nav-title">DAILY TOUR</div>
-
-          <div className="product-nav-list" aria-label="데일리투어 지역 미리보기">
-            {dailyCategories.map((category) => (
-              <button
-                key={category.id}
-                type="button"
-                className="product-nav-item product-nav-item--disabled"
-                aria-disabled="true"
-                tabIndex={-1}
-              >
-                <span className="product-nav-en">{category.labelEn}</span>
-                <span className="product-nav-ko">{category.label}</span>
-              </button>
-            ))}
-          </div>
-        </div>
-      </div>
     </section>
   );
 }

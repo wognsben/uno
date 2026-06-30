@@ -17,7 +17,6 @@
 ========================================================== */
 import { useMemo, useState } from "react";
 
-import ProductHero from "./ProductHero";
 import CategoryFilter from "./CategoryFilter";
 import ProductList from "./ProductList";
 
@@ -140,7 +139,12 @@ export default function ProductTemplate({ pageData = DEFAULT_DATA }: { pageData?
     <div className="product-page-shell">
       <style>{`
         .product-page-shell {
-          width: 100vw;
+          /* Desktop Responsive
+             - 100vw 대신 100% 기준 사용
+             - vertical scrollbar 폭으로 인한 가로 흔들림 방지
+             - Desktop / Tablet Landscape 최소 폭은 1024px 유지 */
+          width: 100%;
+          min-width: 1024px;
           min-height: 100vh;
           overflow-x: hidden;
           background: #ffffff;
@@ -148,26 +152,31 @@ export default function ProductTemplate({ pageData = DEFAULT_DATA }: { pageData?
         }
 
         .product-page-main {
-          width: 100vw;
+          /* Desktop Responsive
+             - 메인 Hero / Section2 / Section3 / Section4와 동일하게
+               페이지 루트는 100% 기준으로 통일 */
+          width: 100%;
+          min-width: 1024px;
           background: #ffffff;
         }
 
         .product-editorial-grid {
-          width: 1700px;
+          /* Desktop Responsive
+             - 1700px Figma canvas를 직접 width로 고정하지 않고
+               실제 표시 기준은 1600px로 제한
+             - ProductList처럼 1700 canvas scale이 필요한 영역은
+               해당 컴포넌트 내부에서 별도 ResizeObserver로 처리 */
+          width: 100%;
+          max-width: 1600px;
+          min-width: 1024px;
           margin: 0 auto;
           position: relative;
           box-sizing: border-box;
         }
-
-        @media (max-width: 1700px) {
-          .product-editorial-grid {
-            width: 100vw;
-          }
-        }
       `}</style>
 
       <main className="product-page-main">
-        <ProductHero pageData={pageData} viewMode={viewMode} onViewModeChange={setViewMode} />
+        
 
         <CategoryFilter
           categories={pageData.categories}
