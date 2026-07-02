@@ -23,6 +23,8 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { MouseEvent } from "react";
 
+import { saveRecentlyViewedProduct } from "../../utils/recentlyViewed";
+
 import imgHero from "../../imports/세미패키지메인히어로그리드/3f5da2e34aadc41b88babc2cb3cf79d54480fb17.png";
 import imgDetailA from "../../imports/세미패키지메인히어로그리드/4330107f5001d8438ca2a32856e91d36fc97e09f.png";
 import imgDetailB from "../../imports/세미패키지메인히어로그리드/a1bb687947753b4c890d720a1b31402344e5c88d.png";
@@ -42,7 +44,6 @@ const DETAIL_CANVAS_HEIGHT = 6260;
   Header VIEWED 자동 오픈 기능에서 사용할 수 있도록
   상세페이지 진입 시 현재 상품 정보를 sessionStorage에 저장한다.
 */
-const RECENTLY_VIEWED_STORAGE_KEY = "unotravel_recently_viewed_products";
 const CART_STORAGE_KEY = "unotravel_cart_items";
 const CART_COUNT_STORAGE_KEY = "unotravel_cart_count";
 const PENDING_RESERVATION_STORAGE_KEY = "unotravel_pending_reservation";
@@ -4399,25 +4400,84 @@ export default function ProductDetail({ products = [] }: ProductDetailProps = {}
     따라서 상세페이지 내부에서 현재 pathname / product id를 기준으로
     세미패키지와 데일리투어 데이터를 분기한다.
 
+    VIEWED Panel / Related Product / ProductList에서 SPA 이동해도
+    ProductDetail 컴포넌트가 그대로 유지될 수 있으므로, 현재 pathname을 state로 관리한다.
+    history.pushState 이후 발생하는 unotravel:navigate 이벤트를 구독해서
+    새로고침 없이 현재 상품 데이터를 다시 계산한다.
+
     실제 백엔드 연동 시에는 이 분기 대신 productId로 API를 조회하고,
     응답의 category 값(semi / daily)에 따라 문서형 UI 또는 캘린더형 UI를 노출한다.
   */
+  const [currentPathname, setCurrentPathname] = useState(() => {
+    if (typeof window === "undefined") return "";
+    return window.location.pathname;
+  });
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const syncPathname = () => {
+      setCurrentPathname(window.location.pathname);
+    };
+
+    window.addEventListener("popstate", syncPathname);
+    window.addEventListener("unotravel:navigate", syncPathname);
+
+    return () => {
+      window.removeEventListener("popstate", syncPathname);
+      window.removeEventListener("unotravel:navigate", syncPathname);
+    };
+  }, []);
+
   const DETAIL_DATA = useMemo(() => {
-    if (typeof window === "undefined") {
-      return SEMI_DETAIL_DATA;
+    const pathname = currentPathname;
+    const productId = decodeURIComponent(pathname.split("/").filter(Boolean).at(-1) ?? "");
+    const currentListProduct = products.find((product) => product.id === productId);
+    const productListType = currentListProduct ? getProductListItemType(currentListProduct) : undefined;
+    const isDailyDetail =
+      productListType === "daily" ||
+      pathname.includes("/product/detail/daily/") ||
+      productId.includes("daily") ||
+      productId.includes("rome-") ||
+      productId.includes("firenze-") ||
+      productId.includes("venezia-") ||
+      productId.includes("napoli-") ||
+      productId.includes("milano-") ||
+      productId.includes("amalfi-");
+
+    const baseDetailData = isDailyDetail ? DAILY_DETAIL_DATA : SEMI_DETAIL_DATA;
+    const fallbackRelatedProduct = [
+      ...SEMI_DETAIL_DATA.relatedSemiPackages,
+      ...DAILY_DETAIL_DATA.relatedDailyTours,
+    ].find((product) => product.id === productId);
+
+    const sourceProduct = currentListProduct ?? fallbackRelatedProduct;
+
+    if (!sourceProduct || productId === baseDetailData.id) {
+      return {
+        ...baseDetailData,
+        id: productId || baseDetailData.id,
+        href: pathname || baseDetailData.href,
+      };
     }
 
-    const pathname = window.location.pathname;
-    const isDailyDetail =
-      pathname.includes("/product/detail/daily/") ||
-      pathname.includes("rome-vatican-daily") ||
-      pathname.includes("rome-city-walk") ||
-      pathname.includes("firenze-uffizi-daily") ||
-      pathname.includes("venezia-walk-daily") ||
-      pathname.includes("napoli-pompei-daily");
+    const sourceRegion = "region" in sourceProduct ? sourceProduct.region : undefined;
+    const sourceBasePrice = "basePrice" in sourceProduct ? sourceProduct.basePrice : undefined;
+    const sourceThumbnail = "thumbnail" in sourceProduct ? sourceProduct.thumbnail : undefined;
 
-    return isDailyDetail ? DAILY_DETAIL_DATA : SEMI_DETAIL_DATA;
-  }, []);
+    return {
+      ...baseDetailData,
+      id: sourceProduct.id,
+      href: sourceProduct.href ?? pathname ?? baseDetailData.href,
+      productType: productListType ?? baseDetailData.productType,
+      eyebrow: sourceProduct.eyebrow ?? sourceRegion ?? baseDetailData.eyebrow,
+      title: sourceProduct.title,
+      region: sourceRegion ?? baseDetailData.region,
+      duration: sourceProduct.duration ?? baseDetailData.duration,
+      basePrice: sourceProduct.price ?? sourceBasePrice ?? baseDetailData.basePrice,
+      heroImage: sourceProduct.image ?? sourceThumbnail ?? baseDetailData.heroImage,
+    };
+  }, [currentPathname, products]);
   const [activeTab, setActiveTab] = useState<ProductDetailTab>("review");
   const [isDateListOpen, setIsDateListOpen] = useState(false);
   /*
@@ -4533,31 +4593,21 @@ export default function ProductDetail({ products = [] }: ProductDetailProps = {}
   /*
     Recently Viewed
     ------------------------------------------
-    Header의 VIEWED 자동 오픈 기능에서 사용할 최근 본 상품 데이터를 저장한다.
-    Header 수정 단계에서 이 storage key를 읽어 자동 오픈 여부를 판단하면 된다.
+    Header의 VIEWED는 전역 기능이므로 상세페이지 진입 시 현재 상품 정보만 저장한다.
+    저장/중복 제거/최대 5개 유지/sessionStorage key 관리는 recentlyViewed 유틸에서 처리한다.
   */
   useEffect(() => {
-    if (typeof window === "undefined") return;
-
-    const viewedItem = {
+    saveRecentlyViewedProduct({
       id: DETAIL_DATA.id,
       title: DETAIL_DATA.title,
-      region: DETAIL_DATA.region,
+      thumbnail: DETAIL_DATA.heroImage,
+      productType: DETAIL_DATA.productType,
+      country: DETAIL_DATA.region,
+      duration: DETAIL_DATA.duration,
+      price: DETAIL_DATA.basePrice,
       href: DETAIL_DATA.href,
-      image: DETAIL_DATA.heroImage,
-      viewedAt: Date.now(),
-    };
-
-    const storedValue = sessionStorage.getItem(RECENTLY_VIEWED_STORAGE_KEY);
-    const previousItems = storedValue ? JSON.parse(storedValue) : [];
-    const nextItems = [
-      viewedItem,
-      ...previousItems.filter((item: { id?: string }) => item.id !== DETAIL_DATA.id),
-    ].slice(0, 6);
-
-    sessionStorage.setItem(RECENTLY_VIEWED_STORAGE_KEY, JSON.stringify(nextItems));
-    sessionStorage.setItem("unotravel_viewed_should_auto_open", "true");
-  }, []);
+    });
+  }, [DETAIL_DATA]);
 
   useEffect(() => {
     setSelectedDateId(

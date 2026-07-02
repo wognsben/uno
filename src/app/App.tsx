@@ -39,7 +39,10 @@ import ProductNavigation from "./components/common_navi/ProductNavigation";
   window.location.pathname 값을 기준으로 category / region 값을 읽고
   ProductTemplate에 실제 DB 데이터를 넘기면 된다.
 */
-import ProductTemplate, { DAILY_TOUR_DATA, SEMI_PACKAGE_DATA } from "../pages/product/ProductTemplate";
+import ProductTemplate, {
+  DAILY_TOUR_DATA,
+  SEMI_PACKAGE_DATA,
+} from "../pages/product/ProductTemplate";
 
 /*
   ProductDetail 연결
@@ -49,6 +52,26 @@ import ProductTemplate, { DAILY_TOUR_DATA, SEMI_PACKAGE_DATA } from "../pages/pr
   src/pages/product/ProductDetail.tsx
 */
 import ProductDetail from "../pages/product/ProductDetail";
+
+/*
+  LoginPage 연결
+
+  Header의 LOGIN 클릭 또는 /login 경로 진입 시 렌더링한다.
+  Header / Footer는 App.tsx 공통 컴포넌트를 그대로 사용한다.
+*/
+import LoginPage from "../pages/login/LoginPage";
+import RegisterPage from "../pages/register/RegisterPage";
+import RegisterAgreement from "../pages/register/RegisterAgreement";
+import RegisterForm from "../pages/register/RegisterForm";
+import RegisterComplete from "../pages/register/RegisterComplete";
+import MyPage from "../pages/mypage/MyPage";
+import MyCart from "../pages/mypage/MyCart";
+import MyReservation from "../pages/mypage/MyReservation";
+import MyInquiry from "../pages/mypage/MyInquiry";
+import MyProfile from "../pages/mypage/MyProfile";
+import MyTour from "../pages/mypage/MyTour";
+import NoticePage from "../pages/info/notice";
+import RefundPage from "../pages/info/refund";
 
 /* ────────────────────────────────────────────
    Page (sections use 100vw shell + full width content rule)
@@ -121,10 +144,24 @@ function CircularText({ text, r = 38 }: { text: string; r?: number }) {
   const cx = 55;
   const cy = 55;
   return (
-    <svg width={110} height={110} style={{ position: "absolute", bottom: 16, right: 16 }}>
-      <circle cx={cx} cy={cy} r={r} fill="none" stroke="#151515" strokeWidth={1.5} />
+    <svg
+      width={110}
+      height={110}
+      style={{ position: "absolute", bottom: 16, right: 16 }}
+    >
+      <circle
+        cx={cx}
+        cy={cy}
+        r={r}
+        fill="none"
+        stroke="#151515"
+        strokeWidth={1.5}
+      />
       <defs>
-        <path id="circlePath" d={`M ${cx},${cy - r} a ${r},${r} 0 1,1 -0.01,0`} />
+        <path
+          id="circlePath"
+          d={`M ${cx},${cy - r} a ${r},${r} 0 1,1 -0.01,0`}
+        />
       </defs>
       <text
         style={{
@@ -138,7 +175,14 @@ function CircularText({ text, r = 38 }: { text: string; r?: number }) {
         <textPath href="#circlePath">{text}</textPath>
       </text>
       {/* Center logo mark */}
-      <rect x={cx - 14} y={cy - 8} width={28} height={16} rx={2} fill="#151515" />
+      <rect
+        x={cx - 14}
+        y={cy - 8}
+        width={28}
+        height={16}
+        rx={2}
+        fill="#151515"
+      />
     </svg>
   );
 }
@@ -167,8 +211,8 @@ function ScrollCard({ card }: { card: (typeof scrollCards)[number] }) {
       <span
         style={{
           fontFamily: /[ㄱ-ㅎㅏ-ㅣ가-힣]/.test(card.title)
-  ? "var(--font-ko)"
-  : "var(--font-en)",
+            ? "var(--font-ko)"
+            : "var(--font-en)",
           fontWeight: 600,
           fontSize: 48,
           lineHeight: "48px",
@@ -196,8 +240,8 @@ function ScrollCard({ card }: { card: (typeof scrollCards)[number] }) {
       <span
         style={{
           fontFamily: /[ㄱ-ㅎㅏ-ㅣ가-힣]/.test(card.sub)
-  ? "var(--font-ko)"
-  : "var(--font-en)",
+            ? "var(--font-ko)"
+            : "var(--font-en)",
           fontWeight: 600,
           fontSize: 15,
           lineHeight: "24px",
@@ -221,7 +265,9 @@ function ScrollCard({ card }: { card: (typeof scrollCards)[number] }) {
       />
 
       {/* Circular text badge on card 1 */}
-      {card.circularText && <CircularText text="PREMIUM · UNO TRAVEL · " r={38} />}
+      {card.circularText && (
+        <CircularText text="PREMIUM · UNO TRAVEL · " r={38} />
+      )}
     </div>
   );
 }
@@ -259,9 +305,9 @@ export default function App() {
   브라우저 세션 기준 최초 진입에서만 Intro를 실행한다.
   이후 Logo 클릭 또는 메인 재진입 시에는 Intro를 다시 보여주지 않는다.
 */
-const [showIntro, setShowIntro] = useState(() => {
-  return sessionStorage.getItem("uno_intro_played") !== "true";
-});
+  const [showIntro, setShowIntro] = useState(() => {
+    return sessionStorage.getItem("uno_intro_played") !== "true";
+  });
 
   /*
     ProductTemplate 임시 라우팅
@@ -279,36 +325,36 @@ const [showIntro, setShowIntro] = useState(() => {
   */
   const [pathname, setPathname] = useState(window.location.pathname);
 
-useEffect(() => {
-  /*
+  useEffect(() => {
+    /*
     SPA Scroll Restoration
     ------------------------------------------
     브라우저 기본 scroll 복원과 App 내부 route 렌더링 타이밍이 충돌하지 않도록
     수동 복원 방식으로 통일한다.
   */
-  if ("scrollRestoration" in window.history) {
-    window.history.scrollRestoration = "manual";
-  }
+    if ("scrollRestoration" in window.history) {
+      window.history.scrollRestoration = "manual";
+    }
 
-  const handleRouteChange = (event: Event) => {
-    const previousPathname = previousPathnameRef.current;
-    const nextPathname = window.location.pathname;
+    const handleRouteChange = (event: Event) => {
+      const previousPathname = previousPathnameRef.current;
+      const nextPathname = window.location.pathname;
 
-    const wasProductPage = previousPathname.startsWith("/product/");
-    const willBeProductPage = nextPathname.startsWith("/product/");
+      const wasProductPage = previousPathname.startsWith("/product/");
+      const willBeProductPage = nextPathname.startsWith("/product/");
 
-    /*
+      /*
       Main Scroll Save
       ------------------------------------------
       메인페이지에서 상품 서브페이지로 이동하기 직전의 scrollY를 저장한다.
       unotravel:navigate 이벤트는 pushState 이후 발생하지만,
       화면은 아직 리렌더링 전이므로 현재 scrollY를 안전하게 읽을 수 있다.
     */
-    if (!wasProductPage) {
-      sessionStorage.setItem(MAIN_SCROLL_STORAGE_KEY, String(window.scrollY));
-    }
+      if (!wasProductPage) {
+        sessionStorage.setItem(MAIN_SCROLL_STORAGE_KEY, String(window.scrollY));
+      }
 
-    /*
+      /*
       Back Navigation Scroll Restore Flag
       ------------------------------------------
       상품 서브페이지에서 브라우저 뒤로가기로 메인페이지에 돌아오는 경우에만
@@ -317,85 +363,106 @@ useEffect(() => {
       Logo 클릭 등 programmatic navigation은 새 진입으로 보고
       스크롤 복원 대상에서 제외한다.
     */
-    shouldRestoreMainScrollRef.current =
-      event.type === "popstate" && wasProductPage && !willBeProductPage;
+      shouldRestoreMainScrollRef.current =
+        event.type === "popstate" && wasProductPage && !willBeProductPage;
 
-    previousPathnameRef.current = nextPathname;
-    setPathname(nextPathname);
-  };
+      previousPathnameRef.current = nextPathname;
+      setPathname(nextPathname);
+    };
 
-  window.addEventListener("popstate", handleRouteChange);
-  window.addEventListener("unotravel:navigate", handleRouteChange);
+    window.addEventListener("popstate", handleRouteChange);
+    window.addEventListener("unotravel:navigate", handleRouteChange);
 
-  return () => {
-    window.removeEventListener("popstate", handleRouteChange);
-    window.removeEventListener("unotravel:navigate", handleRouteChange);
-  };
-}, []);
+    return () => {
+      window.removeEventListener("popstate", handleRouteChange);
+      window.removeEventListener("unotravel:navigate", handleRouteChange);
+    };
+  }, []);
 
-useEffect(() => {
-  /*
+  useEffect(() => {
+    /*
     Main Scroll Tracking
     ------------------------------------------
     메인페이지를 보고 있는 동안 최신 scrollY를 계속 저장한다.
     상품 서브페이지에서는 저장값을 덮어쓰지 않는다.
   */
-  const handleMainScroll = () => {
-    if (window.location.pathname.startsWith("/product/")) {
+    const handleMainScroll = () => {
+      /*
+      Main Scroll Tracking Scope
+      ------------------------------------------
+      메인페이지가 아닌 /product/*, /login, /register/* 같은 서브 라우트에서는
+      메인페이지 scrollY 저장값을 덮어쓰지 않는다.
+    */
+      if (window.location.pathname !== "/") {
+        return;
+      }
+
+      sessionStorage.setItem(MAIN_SCROLL_STORAGE_KEY, String(window.scrollY));
+    };
+
+    window.addEventListener("scroll", handleMainScroll, { passive: true });
+
+    return () => {
+      window.removeEventListener("scroll", handleMainScroll);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (pathname.startsWith("/product/")) {
       return;
     }
 
-    sessionStorage.setItem(MAIN_SCROLL_STORAGE_KEY, String(window.scrollY));
-  };
+    if (!shouldRestoreMainScrollRef.current) {
+      return;
+    }
 
-  window.addEventListener("scroll", handleMainScroll, { passive: true });
+    shouldRestoreMainScrollRef.current = false;
 
-  return () => {
-    window.removeEventListener("scroll", handleMainScroll);
-  };
-}, []);
-
-useEffect(() => {
-  if (pathname.startsWith("/product/")) {
-    return;
-  }
-
-  if (!shouldRestoreMainScrollRef.current) {
-    return;
-  }
-
-  shouldRestoreMainScrollRef.current = false;
-
-  /*
+    /*
     Main Scroll Restore
     ------------------------------------------
     메인페이지 섹션들이 다시 렌더링되고 각 섹션의 Dynamic Height가 잡힌 뒤
     저장된 위치로 복원한다.
   */
-  const restoreScrollY = getStoredMainScrollY();
+    const restoreScrollY = getStoredMainScrollY();
 
-  requestAnimationFrame(() => {
     requestAnimationFrame(() => {
-      window.scrollTo({
-        top: restoreScrollY,
-        left: 0,
-        behavior: "auto",
+      requestAnimationFrame(() => {
+        window.scrollTo({
+          top: restoreScrollY,
+          left: 0,
+          behavior: "auto",
+        });
       });
     });
-  });
-}, [pathname]);
+  }, [pathname]);
 
-const isProductPage = pathname.startsWith("/product/");
+  const isProductPage = pathname.startsWith("/product/");
+  const isLoginPage = pathname === "/login";
+  const isRegisterPage = pathname === "/register";
+  const isRegisterAgreementPage = pathname === "/register/agreement";
+  const isRegisterFormPage = pathname === "/register/form";
+  const isRegisterCompletePage = pathname === "/register/complete";
+  const isMyPage = pathname === "/mypage";
+  const isMyCartPage = pathname === "/mypage/cart";
+  const isMyReservationPage = pathname === "/mypage/reservations";
+  const isMyInquiryPage = pathname === "/mypage/inquiry";
+  const isMyProfilePage = pathname === "/mypage/profile";
+  const isMyTourPage = pathname === "/mypage/tour";
+  const isMyPageRoute = pathname.startsWith("/mypage");
+  const isNoticePage = pathname === "/info/notice";
+  const isRefundPage = pathname === "/info/refund";
+  const isInfoPageRoute = pathname.startsWith("/info/");
 
-/*
+  /*
   Product Detail Route
   ------------------------------------------
   /product/detail/... 경로는 ProductDetail을 렌더링한다.
   ProductTemplate 내부 조건부 전환이 아니라 App.tsx에서 목록/상세를 분리한다.
 */
-const isProductDetail = pathname.startsWith("/product/detail/");
+  const isProductDetail = pathname.startsWith("/product/detail/");
 
-/*
+  /*
   Product List Route Data
   ------------------------------------------
   /product/daily/... 경로에서는 데일리투어 목록 데이터를 보여준다.
@@ -404,8 +471,10 @@ const isProductDetail = pathname.startsWith("/product/detail/");
   실제 백엔드 연동 시 pathname에서 category / region 값을 추출해
   ProductTemplateData 대신 API 응답 데이터를 전달하면 된다.
 */
-const isDailyProductPage = pathname.startsWith("/product/daily/");
-const productTemplateData = isDailyProductPage ? DAILY_TOUR_DATA : SEMI_PACKAGE_DATA;
+  const isDailyProductPage = pathname.startsWith("/product/daily/");
+  const productTemplateData = isDailyProductPage
+    ? DAILY_TOUR_DATA
+    : SEMI_PACKAGE_DATA;
 
   const sectionShell = {
     position: "relative" as const,
@@ -423,14 +492,22 @@ const productTemplateData = isDailyProductPage ? DAILY_TOUR_DATA : SEMI_PACKAGE_
   return (
     <>
       {/* Intro */}
-      {!isProductPage && showIntro && (
-        <Intro
-  onFinish={() => {
-    sessionStorage.setItem("uno_intro_played", "true");
-    setShowIntro(false);
-  }}
-/>
-      )}
+      {!isProductPage &&
+        !isLoginPage &&
+        !isRegisterPage &&
+        !isRegisterAgreementPage &&
+        !isRegisterFormPage &&
+        !isRegisterCompletePage &&
+        !isMyPageRoute &&
+        !isInfoPageRoute &&
+        showIntro && (
+          <Intro
+            onFinish={() => {
+              sessionStorage.setItem("uno_intro_played", "true");
+              setShowIntro(false);
+            }}
+          />
+        )}
 
       {/* Main */}
       <div
@@ -476,18 +553,18 @@ const productTemplateData = isDailyProductPage ? DAILY_TOUR_DATA : SEMI_PACKAGE_
             즉, ProductTemplate 내부 Hero보다 먼저 노출되는 공통 Sub Page Navigation이다.
           */
           <>
-  {/* 
+            {/* 
     ProductNavigation Offset
     ----------------------------------------------------------
     Header가 상단 floating 구조이므로
     상품 서브페이지 Navigation이 Header 뒤로 가려지지 않도록
     Header 높이만큼 상단 여백을 확보한다.
   */}
-  <div style={{ paddingTop: 132 }}>
-    <ProductNavigation />
-  </div>
+            <div style={{ paddingTop: 132 }}>
+              <ProductNavigation />
+            </div>
 
-  {/*
+            {/*
     Product Route Split
     ----------------------------------------------------------
     /product/semi/... 또는 /product/daily/... 는 상품 목록(ProductTemplate)
@@ -495,8 +572,68 @@ const productTemplateData = isDailyProductPage ? DAILY_TOUR_DATA : SEMI_PACKAGE_
 
     ProductNavigation은 목록/상세 공통으로 유지한다.
   */}
-  {isProductDetail ? <ProductDetail /> : <ProductTemplate pageData={productTemplateData} />}
-</>
+            {isProductDetail ? (
+              <ProductDetail />
+            ) : (
+              <ProductTemplate pageData={productTemplateData} />
+            )}
+          </>
+        ) : isLoginPage ? (
+          /*
+            Login Page
+
+            /login 경로에서 로그인 페이지를 렌더링한다.
+            Header / Footer는 App.tsx 공통 컴포넌트를 유지하고,
+            ProductNavigation은 상품 페이지 전용이므로 노출하지 않는다.
+          */
+          <LoginPage />
+        ) : isRegisterPage ? (
+          /*
+            Register Start Page
+
+            /register 경로에서 회원가입 시작 페이지를 렌더링한다.
+            기존 regis_agree.php 진입 전 안내/시작 화면에 대응한다.
+          */
+          <RegisterPage />
+        ) : isRegisterAgreementPage ? (
+          /*
+            Register Agreement Page
+
+            /register/agreement 경로에서 약관 동의 페이지를 렌더링한다.
+            기존 regis_agree.php 흐름에 대응한다.
+          */
+          <RegisterAgreement />
+        ) : isRegisterFormPage ? (
+          /*
+            Register Form Page
+
+            /register/form 경로에서 회원가입 입력 페이지를 렌더링한다.
+            실제 백엔드 연동 전까지는 프론트 placeholder 흐름을 유지한다.
+          */
+          <RegisterForm />
+        ) : isRegisterCompletePage ? (
+          /*
+            Register Complete Page
+
+            /register/complete 경로에서 가입 완료 페이지를 렌더링한다.
+          */
+          <RegisterComplete />
+        ) : isMyPage ? (
+          <MyPage />
+        ) : isMyCartPage ? (
+          <MyCart />
+        ) : isMyReservationPage ? (
+          <MyReservation />
+        ) : isMyInquiryPage ? (
+          <MyInquiry />
+        ) : isMyProfilePage ? (
+          <MyProfile />
+        ) : isMyTourPage ? (
+          <MyTour />
+        ) : isNoticePage ? (
+          <NoticePage />
+        ) : isRefundPage ? (
+          <RefundPage />
         ) : (
           <>
             {/* Hero */}
@@ -526,23 +663,23 @@ const productTemplateData = isDailyProductPage ? DAILY_TOUR_DATA : SEMI_PACKAGE_
             </div>
 
             {/* Section3 */}
-<div
-  style={{
-    ...sectionShell,
+            <div
+              style={{
+                ...sectionShell,
 
-    /* Desktop Responsive Exception
+                /* Desktop Responsive Exception
        ------------------------------------------
        Section3 내부에서 ResizeObserver + Dynamic Height를 직접 관리한다.
        상단 무한 Horizontal Slider만 Section3 내부에서 100vw를 유지한다.
        App.tsx에서는 고정 height를 주지 않는다.
     */
-    width: "100%",
-    minWidth: 1024,
-    overflow: "hidden",
-  }}
->
-  <Section3Component />
-</div>
+                width: "100%",
+                minWidth: 1024,
+                overflow: "hidden",
+              }}
+            >
+              <Section3Component />
+            </div>
 
             {/* Section4 */}
             <div
