@@ -791,16 +791,24 @@ const STYLE = `
     border-top: 1px solid rgba(17, 17, 17, 0.16);
   }
 
-  .agreement-aside-consent .agreement-all-check {
-    height: 46px;
-    padding: 0 16px;
-    border: 1px solid rgba(17, 17, 17, 0.14);
-    background: transparent;
-  }
+ .agreement-aside-consent .agreement-all-check {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
 
-  .agreement-aside-consent .agreement-all-check:hover {
-    border-color: rgba(17, 17, 17, 0.32);
-  }
+    padding: 0;
+    height: auto;
+
+    border: 0;
+    background: transparent;
+
+    font-size: 13px;
+    color: rgba(17,17,17,.72);
+}
+
+.agreement-aside-consent .agreement-all-check:hover {
+    color: #111;
+}
 
   .agreement-step-index {
     display: grid;

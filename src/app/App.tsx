@@ -478,6 +478,7 @@ export default function App() {
   const isRegisterAgreementPage = pathname === "/register/agreement";
   const isRegisterFormPage = pathname === "/register/form";
   const isRegisterCompletePage = pathname === "/register/complete";
+  const isRegisterRoute = pathname === "/register" || pathname.startsWith("/register/");
   const isMyPage = pathname === "/mypage";
   const isMyCartPage = pathname === "/mypage/cart";
   const isMyReservationPage = pathname === "/mypage/reservations";
@@ -565,7 +566,7 @@ export default function App() {
         }}
       >
         {/* Header */}
-        {!isLoginPage && (
+        {!isLoginPage && !isRegisterRoute && (
           <div
             style={{
               /* Desktop Responsive
@@ -743,7 +744,7 @@ export default function App() {
         )}
 
         {/* Footer */}
-        {!isLoginPage && (
+        {!isLoginPage && !isRegisterRoute && (
           <div
             style={{
               /* Desktop Responsive
