@@ -224,18 +224,21 @@ const RESERVATION_MODULE_STYLE = `
     position: fixed;
     inset: 0;
     z-index: 1200;
-    display: grid;
-    place-items: center;
+    display: block;
     padding: 24px;
     background: rgba(21, 21, 21, 0.22);
     backdrop-filter: blur(14px);
   }
 
   .pd-reservation-login-modal {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
     width: min(420px, 100%);
     border: 1px solid rgba(21, 21, 21, 0.16);
     background: #ffffff;
-    padding: 28px;
+    padding: 24px;
     box-sizing: border-box;
     color: #151515;
   }
@@ -251,20 +254,20 @@ const RESERVATION_MODULE_STYLE = `
   }
 
   .pd-reservation-login-modal h2 {
-    margin: 18px 0 12px;
+    margin: 16px 0 10px;
     font-family: var(--font-ko);
-    font-size: 30px;
-    line-height: 1.08;
-    letter-spacing: -0.06em;
+    font-size: 25px;
+    line-height: 1.14;
+    letter-spacing: -0.045em;
     font-weight: 860;
   }
 
   .pd-reservation-login-modal p {
     margin: 0;
     font-family: var(--font-ko);
-    font-size: 15px;
-    line-height: 1.65;
-    letter-spacing: -0.04em;
+    font-size: 13px;
+    line-height: 1.58;
+    letter-spacing: -0.025em;
     color: rgba(21, 21, 21, 0.62);
     word-break: keep-all;
   }
@@ -284,8 +287,8 @@ const RESERVATION_MODULE_STYLE = `
     color: #151515;
     cursor: pointer;
     font-family: var(--font-ko);
-    font-size: 14px;
-    letter-spacing: -0.035em;
+    font-size: 13px;
+    letter-spacing: -0.025em;
     font-weight: 760;
   }
 

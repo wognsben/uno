@@ -1,3 +1,7 @@
+// LoginPage.tsx
+// UNO Travel 로그인 화면을 담당하며 이메일/소셜 로그인 진입, 로그인 후 이동, 임시 세션 상태를 관리합니다.
+// 실제 인증 API 구현 파일이 아니라 프런트 로그인 UI와 예약 플로우 진입 전 사용자 상태 안내를 맡습니다.
+// RegisterForm이나 authSession과 혼동되지 않도록 화면 렌더링과 임시 로그인 동작만 포함합니다.
 import { useState } from "react";
 
 import googleLogo from "./snsloginlogo.tsx/google_logo.png";
@@ -71,7 +75,6 @@ export default function LoginPage() {
 
       현재는 프론트 UI/동선 확인용 placeholder다.
     */
-    console.log(`[UNOTRAVEL] social login requested: ${provider}`);
     setSocialNotice(`${SOCIAL_PROVIDER_LABEL[provider]} 로그인은 현재 준비 중입니다.`);
   }
 
@@ -96,10 +99,6 @@ export default function LoginPage() {
       실제 백엔드 연동 시 이 위치에서 로그인 API를 호출한다.
       현재는 UI/동선 확인용 placeholder다.
     */
-    console.log("[UNOTRAVEL] login requested", {
-      email,
-    });
-
     /*
       Temporary Front Auth
       ------------------------------------------

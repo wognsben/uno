@@ -18,6 +18,7 @@ www/
     _product_map.php
     _response.php
     _reservation_helpers.php
+    health.php
     auth/
       session.php
     cart/
@@ -38,6 +39,7 @@ www/
 현재 포함된 endpoint:
 
 - `GET /api/auth/session.php`
+- `GET /api/health.php`
 - `GET /api/products/index.php`
 - `GET /api/products/detail.php?id=napoli-pompei-daily&mode=reservation`
 - `GET /api/products/availability.php?id=napoli-pompei-daily&from=2026-07-01&to=2026-08-31`
@@ -65,4 +67,4 @@ React 프런트에서는 최종적으로 `/api/auth/session`, `/api/products/:id
 - 예약 취소/환불 API
 - 관리자 전용 API
 
-위 endpoint들은 `auth/session.php`, `products/index.php`, `products/detail.php`, `products/availability.php`, `cart/index.php`, `cart/delete.php`, `reservations/draft.php`, `reservations/detail.php`, `reservations/confirm.php`, `my/reservations.php`를 운영 서버에서 확인한 뒤 순서대로 추가하는 것이 안전합니다.
+위 endpoint들은 `health.php`, `auth/session.php`, `products/index.php`, `products/detail.php`, `products/availability.php`, `cart/index.php`, `cart/delete.php`, `reservations/draft.php`, `reservations/detail.php`, `reservations/confirm.php`, `my/reservations.php`를 운영 서버에서 확인한 뒤 순서대로 추가하는 것이 안전합니다.

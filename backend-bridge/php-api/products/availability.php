@@ -31,7 +31,7 @@ function uno_api_date_ts($value)
 
 function uno_api_weekday_ko($date)
 {
-    $labels = array('일', '월', '화', '수', '목', '금', '토');
+    $labels = json_decode('["\uc77c","\uc6d4","\ud654","\uc218","\ubaa9","\uae08","\ud1a0"]', true);
     $index = (int) date('w', uno_api_date_ts($date));
     return isset($labels[$index]) ? $labels[$index] : '';
 }
@@ -39,14 +39,14 @@ function uno_api_weekday_ko($date)
 function uno_api_availability_label($status)
 {
     if ($status === 'soldout') {
-        return '마감';
+        return json_decode('"\ub9c8\uac10"');
     }
 
     if ($status === 'soon') {
-        return '마감 임박';
+        return json_decode('"\ub9c8\uac10 \uc784\ubc15"');
     }
 
-    return '예약 가능';
+    return json_decode('"\uc608\uc57d \uac00\ub2a5"');
 }
 
 function uno_api_availability_status_from_remaining($remainingSeats)

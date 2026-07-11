@@ -1,3 +1,7 @@
+// RegisterForm.tsx
+// UNO Travel 회원가입 정보 입력 화면을 담당하며 입력값, 비밀번호 확인, Kcaptcha 표시/검증 상태를 관리합니다.
+// 실제 회원 DB 저장 API가 아니라 기존 그누보드 가입 흐름과 연결되기 전 프런트 입력 UI를 맡습니다.
+// LoginPage나 RegisterComplete와 역할이 겹치지 않도록 가입 폼 검증과 다음 단계 이동만 포함합니다.
 import { useEffect, useMemo, useState } from "react";
 
 /* ==========================================================
@@ -174,12 +178,6 @@ export default function RegisterForm() {
       실제 백엔드 연동 시 이 위치에서 기존 그누보드 회원가입 처리 또는 신규 API를 호출한다.
       현재는 프론트 UI/동선 확인용 placeholder다.
     */
-    console.log("[UNOTRAVEL] register requested", {
-      name,
-      email,
-      phone,
-    });
-
     setNotice("");
     navigateTo("/register/complete");
   }

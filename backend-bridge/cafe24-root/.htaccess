@@ -1,0 +1,16 @@
+# .htaccess
+# Cafe24 /www root routing file for the UNO Travel React single-page app.
+# It keeps real files, folders, and PHP API endpoints untouched while sending React routes to index.html.
+# This file belongs in the public web root, not inside /api, so it does not duplicate endpoint-specific PHP logic.
+
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteBase /
+
+  RewriteCond %{REQUEST_FILENAME} -f [OR]
+  RewriteCond %{REQUEST_FILENAME} -d
+  RewriteRule ^ - [L]
+
+  RewriteRule ^api/ - [L]
+  RewriteRule . /index.html [L]
+</IfModule>
